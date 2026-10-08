@@ -144,3 +144,25 @@ test('the opening truck continues into transport on one timeline without resetti
   p.pose(0);expect(y()).toBe(initial);
   expect(p.mounts).toBe(1);
 });
+
+test('packages stay in workers hands during each carrying leg and ride with the truck', () => {
+  const p = player();
+  const position = (id: string) => p.nodes.get(`#${id}`).attributes.transform.match(/-?[\d.]+/g).map(Number);
+  for (const [time, parcel, person] of [[.65, 'raw-goods', 'farm-worker'], [2.4, 'raw-goods', 'receiver'], [4.07, 'stock-0', 'stock-worker'], [6.07, 'stock-0', 'loader'], [9.77, 'stock-0', 'customer-worker']] as const) {
+    p.pose(time);
+    const cargo = position(parcel), hands = position(person);
+    expect(cargo[0]).toBeCloseTo(hands[0], 6);
+    expect(cargo[1] - hands[1]).toBeCloseTo(7, 6);
+  }
+  for (const time of [7, 9.2, 9.55]) {
+    p.pose(time);
+    const cargo = position('stock-0'), truck = position('truck');
+    expect(Math.hypot(cargo[0] - truck[0], cargo[1] - truck[1])).toBeCloseTo(Math.hypot(15, 62), 6);
+    expect(cargo[2]).toBe(truck[2]);
+    expect(Number(p.nodes.get('#stock-0').attributes.opacity)).toBe(1);
+  }
+  p.pose(10.31);
+  const delivered = position('stock-7');
+  p.pose(12);
+  expect(position('stock-7')).toEqual(delivered);
+});

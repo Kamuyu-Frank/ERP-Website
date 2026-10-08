@@ -35,7 +35,7 @@ export const journeySteps = [
     "icon": 1
   },
   {
-    "name": "Process",
+    "name": "Manufacture",
     "title": "Watch the factory get to work.",
     "body": "Inside the factory, raw materials move through processing. The production work order connects the materials used to the finished goods.",
     "record": "Work order",

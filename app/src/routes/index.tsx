@@ -36,7 +36,7 @@ function Home(){
   <div className="journey-sticky">
    <iframe ref={journeyFrame} onLoad={syncJourney} src="/journey.html?continuous=1" title="Winding road from the supplier to the final receipt" className="journey-animation-frame" tabIndex={-1}/>
    <div className="journey-copy" aria-live="polite" aria-atomic="true">
-    <p className="journey-eyebrow"><span>{String(stage+1).padStart(2,'0')} / {STAGE_COUNT}</span> {selected.name}</p>
+    <p className="journey-eyebrow">{selected.name}</p>
     <h2 key={selected.name}>{stage===0?<>SnapERP.<br/>Business in motion.</>:selected.title}</h2>
     <p className="journey-description">{stage===0?"From raw materials to the final receipt. Scroll to drive the truck through a connected business.":selected.body}</p>
     {stage===0?<div className="journey-opening-actions"><a href="#demo">Book a demo ↗</a><span>Scroll to begin ↓</span></div>:<div className="journey-receipt"><span>{selected.record}</span><strong>{selected.ref}</strong><small>{selected.detail}</small></div>}
