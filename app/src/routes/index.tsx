@@ -31,14 +31,14 @@ function Home(){
  return <><a className="skip-link" href="#main">Skip to content</a>
  <header className="site-header"><div className="header-inner"><Brand/><button className="menu-toggle" aria-expanded={menu} aria-controls="site-nav" onClick={()=>setMenu(!menu)}>{menu?'Close':'Menu'}</button><nav id="site-nav" className={menu?'site-nav nav-open':'site-nav'} aria-label="Main navigation">{[['Workflow','#workflow'],['Features','#features'],['Integrations','#integrations'],['Pricing','#pricing']].map(([label,link])=><a key={label} href={link} onClick={()=>setMenu(false)}>{label}</a>)}<a className="sign-in" href="https://erp.werevu.co.ke/">Sign in ↗</a><a className="nav-demo" href="#demo" onClick={()=>setMenu(false)}>Book a demo ↗</a></nav></div></header>
  <main id="main"><h1 className="journey-page-title">SnapERP. Business in motion.</h1>
- <section id="workflow" className="journey journey-immersive" ref={sectionRef} aria-label="One continuous journey from the farm to the final receipt">
+ <section id="workflow" className="journey journey-immersive" ref={sectionRef} aria-label="One continuous journey from the supplier to the final receipt">
   {journeySteps.map((s,i)=><span key={s.name} id={`step-${i}`} className="journey-anchor" style={{'--step':i} as CSSProperties} aria-hidden="true"/>)}
   <div className="journey-sticky">
-   <iframe ref={journeyFrame} onLoad={syncJourney} src="/journey.html?continuous=1" title="Winding road from the farm to the final receipt" className="journey-animation-frame" tabIndex={-1}/>
+   <iframe ref={journeyFrame} onLoad={syncJourney} src="/journey.html?continuous=1" title="Winding road from the supplier to the final receipt" className="journey-animation-frame" tabIndex={-1}/>
    <div className="journey-copy" aria-live="polite" aria-atomic="true">
     <p className="journey-eyebrow"><span>{String(stage+1).padStart(2,'0')} / {STAGE_COUNT}</span> {selected.name}</p>
     <h2 key={selected.name}>{stage===0?<>SnapERP.<br/>Business in motion.</>:selected.title}</h2>
-    <p className="journey-description">{stage===0?"From the first maize sack to the final receipt. Scroll to drive the truck through a connected business.":selected.body}</p>
+    <p className="journey-description">{stage===0?"From raw materials to the final receipt. Scroll to drive the truck through a connected business.":selected.body}</p>
     {stage===0?<div className="journey-opening-actions"><a href="#demo">Book a demo ↗</a><span>Scroll to begin ↓</span></div>:<div className="journey-receipt"><span>{selected.record}</span><strong>{selected.ref}</strong><small>{selected.detail}</small></div>}
    </div>
 

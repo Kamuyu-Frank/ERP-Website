@@ -1,7 +1,7 @@
 /* Persistent SVG landscape. All business action is a reversible function of scroll progress. */
 (() => {
   const svg = document.getElementById('world');
-  const names = ['Farm', 'Transport', 'Receive', 'Process', 'Stock', 'Order', 'Load', 'Invoice', 'eTIMS', 'Deliver', 'Pay', 'Receipt'];
+  const names = ['Supplier', 'Transport', 'Receive', 'Process', 'Stock', 'Order', 'Load', 'Invoice', 'eTIMS', 'Deliver', 'Pay', 'Receipt'];
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
   const clamp = v => Math.max(0, Math.min(1, v));
   const ease = v => { v = clamp(v); return v * v * (3 - 2 * v); };
@@ -19,7 +19,7 @@
   const text = (x, y, value, size = 13, fill = '#bdd0d8', extra = '') => `<text x="${x}" y="${y}" fill="${fill}" font-size="${size}" font-family="system-ui,sans-serif" ${extra}>${value}</text>`;
   const group = (id, markup, extra = '') => `<g id="${id}" ${extra}>${markup}</g>`;
   const sack = '<path d="M-8-19Q0-16 8-19L7-13Q19 12 10 17Q0 22-10 17Q-19 12-7-13Z" fill="#d8bd86" stroke="#f1dcad"/><path d="M-7-13H7M-8 5Q0 11 8 5" fill="none" stroke="#947741" stroke-width="2"/>';
-  const pack = '<path d="M-14-13L8-17L17-10V15L-5 19L-14 12Z" fill="#e3e6dc" stroke="#8ba1a6"/><path d="M-14-13L-5-6L17-10M-5-6V19" fill="none" stroke="#fff"/><path d="M-5 2L17-2V7L-5 11Z" fill="#208b9d"/><text x="-1" y="6" font-family="system-ui" font-size="5" fill="white">FLOUR</text>';
+  const pack = '<path d="M-14-13L8-17L17-10V15L-5 19L-14 12Z" fill="#e3e6dc" stroke="#8ba1a6"/><path d="M-14-13L-5-6L17-10M-5-6V19" fill="none" stroke="#fff"/><path d="M-5 2L17-2V7L-5 11Z" fill="#208b9d"/><text x="-1" y="6" font-family="system-ui" font-size="5" fill="white">GOODS</text>';
   function tree(x, y, s = 1) {
     return `<g transform="translate(${x} ${y}) scale(${s})"><ellipse cy="14" rx="23" ry="13" fill="#0d1c20" opacity=".35"/><path d="M0 10V-19" stroke="#8a7960" stroke-width="6"/><circle cy="-18" r="24" fill="#345f4c"/><circle cx="-9" cy="-27" r="15" fill="#4d775b"/><circle cx="9" cy="-21" r="14" fill="#406f51"/></g>`;
   }
@@ -49,7 +49,7 @@
       <path d="M-29 47H-39M29 47H39" stroke="#a2b6c1" stroke-width="3"/>
       <rect x="-42" y="43" width="7" height="12" rx="2" fill="#213d4b"/><rect x="35" y="43" width="7" height="12" rx="2" fill="#213d4b"/>
       <rect x="-29" y="-21" width="58" height="20" fill="${body}"/>
-      ${text(0, -7, green ? 'FARM' : 'SNAP ERP', 9, '#fff', 'text-anchor="middle" font-weight="700"')}
+      ${text(0, -7, green ? 'SUPPLY' : 'SNAP ERP', 9, '#fff', 'text-anchor="middle" font-weight="700"')}
       <path d="M-21 83L-29 120M21 83L29 120" stroke="#ffeeae" stroke-width="12" opacity=".055"/>`);
   }
   function building(x, y, w, h, title, interior = '') {
@@ -75,25 +75,25 @@
     svg.removeAttribute('aria-labelledby');
     let road = '';
     for (let y = 0; y <= 3300; y += 10) { const p = roadAt(y); road += `${y ? 'L' : 'M'}${p.x.toFixed(2)} ${y} `; }
-    let crops = '';
-    for (let r = 0; r < 7; r++) for (let c = 0; c < 7; c++) crops += `<g class="maize" style="animation-delay:${(r + c) * -.3}s" transform="translate(${92 + c * 34} ${128 + r * 32})"><path d="M0 10V-15M0 2Q-15-12-10-9M0-5Q14-22 10-15" fill="none" stroke="#739866" stroke-width="3"/><ellipse cx="3" cy="-11" rx="4" ry="8" fill="#d9bf65"/></g>`;
+    let materials = '';
+    for (let r = 0; r < 4; r++) for (let c = 0; c < 4; c++) materials += `<g transform="translate(${105 + c * 60} ${135 + r * 60})"><path d="M-21 18H22M-21 23H22" stroke="#9b8969" stroke-width="4"/>${pack}</g>`;
     let trees = '';
     for (let i = 0; i < 30; i++) { const y = 100 + i * 108; trees += tree(i % 2 ? 40 : 970, y, .7 + (i % 3) * .15); }
-    const invoice = `<rect width="520" height="185" rx="10" fill="#f0f4f4"/>${text(24, 30, 'CUSTOMER INVOICE', 12, '#476472', 'letter-spacing="2"')}${text(24, 62, 'INV-0286', 25, '#193340')}${text(24, 91, '24 flour packages · Credit sale', 13, '#59717d')}<path d="M24 111H490" stroke="#beced3"/>${text(24, 141, 'TOTAL  KSh 48,000', 18, '#193340')}<g id="invoice-unpaid">${text(340, 141, 'UNPAID', 13, '#997136', 'font-weight="700"')}</g>${text(24, 166, 'ILLUSTRATIVE RECORD', 9, '#71858b')}`;
-    svg.innerHTML = `<title>From the farm to the final receipt</title><defs><linearGradient id="cargo-metal" x2="1" y2="0"><stop stop-color="#c3d2db"/><stop offset=".5" stop-color="#edf3f4"/><stop offset="1" stop-color="#b0c3ce"/></linearGradient></defs>
+    const invoice = `<rect width="520" height="185" rx="10" fill="#f0f4f4"/>${text(24, 30, 'CUSTOMER INVOICE', 12, '#476472', 'letter-spacing="2"')}${text(24, 62, 'INV-0286', 25, '#193340')}${text(24, 91, '24 packages · Credit sale', 13, '#59717d')}<path d="M24 111H490" stroke="#beced3"/>${text(24, 141, 'TOTAL  KSh 48,000', 18, '#193340')}<g id="invoice-unpaid">${text(340, 141, 'UNPAID', 13, '#997136', 'font-weight="700"')}</g>${text(24, 166, 'ILLUSTRATIVE RECORD', 9, '#71858b')}`;
+    svg.innerHTML = `<title>From the supplier to the final receipt</title><defs><linearGradient id="cargo-metal" x2="1" y2="0"><stop stop-color="#c3d2db"/><stop offset=".5" stop-color="#edf3f4"/><stop offset="1" stop-color="#b0c3ce"/></linearGradient></defs>
     <rect width="1600" height="1400" fill="#17232d"/>
     <g id="campus"><rect x="0" y="-180" width="1010" height="3650" rx="80" fill="#1b3035"/>
       <path d="${road}" fill="none" stroke="#0e2029" stroke-width="132"/><path d="${road}" fill="none" stroke="#49606a" stroke-width="118"/><path d="${road}" fill="none" stroke="#263944" stroke-width="110"/>
       <path d="${road}" fill="none" stroke="#c7be92" stroke-width="2" stroke-dasharray="18 20"/>
       ${trees}
       <path d="M345 275H520M420 925H615M510 1580H650M510 2960H640" fill="none" stroke="#52666a" stroke-width="48"/>
-      <rect x="65" y="92" width="272" height="264" rx="14" fill="#344831" stroke="#667957"/>${crops}
-      ${building(95, 385, 190, 95, 'GROWER COLLECTION', `<path d="M20 45H165M20 68H165" stroke="#678477" stroke-width="3"/>`)}
-      ${text(75, 69, '01 / THE FARM', 17, '#dae5d7', 'letter-spacing="3"')}
+      <rect x="65" y="92" width="272" height="264" rx="14" fill="#34454b" stroke="#667d85"/>${materials}
+      ${building(95, 385, 190, 95, 'SUPPLIER COLLECTION', `<path d="M20 45H165M20 68H165" stroke="#678477" stroke-width="3"/>`)}
+      ${text(75, 69, '01 / SUPPLIER', 17, '#dae5d7', 'letter-spacing="3"')}
       <g transform="translate(340 250)">${sack}</g><g transform="translate(355 280)">${sack}</g>
-      ${building(610, 755, 300, 425, 'MAIZE MILL / CUTAWAY', `${belt(32, 80, 58, 305)}<rect x="115" y="135" width="147" height="151" rx="12" fill="#66818b"/><rect x="130" y="150" width="117" height="75" rx="5" fill="#14323f"/><path d="M170 70V135M206 70V135" stroke="#8ca5ac" stroke-width="18"/>${text(137, 254, 'MILL / 01', 13, '#ecf0e9')}<path d="M90 345H252V408" fill="none" stroke="#698692" stroke-width="30"/>`)}
+      ${building(610, 755, 300, 425, 'FACTORY / PROCESSING', `${belt(32, 80, 58, 305)}<rect x="115" y="135" width="147" height="151" rx="12" fill="#66818b"/><rect x="130" y="150" width="117" height="75" rx="5" fill="#14323f"/><path d="M170 70V135M206 70V135" stroke="#8ca5ac" stroke-width="18"/>${text(137, 254, 'LINE / 01', 13, '#ecf0e9')}<path d="M90 345H252V408" fill="none" stroke="#698692" stroke-width="30"/>`)}
       <path d="M862 1163V1320" stroke="#66828e" stroke-width="30"/><path d="M862 1163V1320" stroke="#263f4c" stroke-width="20" stroke-dasharray="6 6"/>
-      ${building(635, 1310, 290, 360, 'FINISHED GOODS / FLOUR', shelf(34, 70) + shelf(34, 166) + `<path d="M0 286H68" stroke="#a6b5b6" stroke-width="24"/>`)}
+      ${building(635, 1310, 290, 360, 'FINISHED GOODS', shelf(34, 70) + shelf(34, 166) + `<path d="M0 286H68" stroke="#a6b5b6" stroke-width="24"/>`)}
       ${building(640, 1745, 270, 130, 'SALES DESK', '<rect x="30" y="65" width="170" height="35" rx="5" fill="#8d9c92"/><rect x="115" y="44" width="50" height="32" rx="4" fill="#88b6bf"/>')}
       ${group('order-call', `<rect x="0" y="0" width="46" height="74" rx="8" fill="#dae4e4"/><rect x="5" y="10" width="36" height="50" rx="3" fill="#237b76"/><path d="M13 22Q9 43 29 49L34 40L25 35L20 38L18 31L21 28Z" fill="#ecf4ed"/><g id="order-signal"><path d="M-9 15Q-24 35-9 54M55 15Q70 35 55 54" fill="none" stroke="#75d5b6" stroke-width="3"/></g>`, 'transform="translate(690 1803)"')}
       ${text(280, 2160, 'DISPATCH ROUTE', 12, '#9db3b9', 'letter-spacing="3"')}
@@ -123,7 +123,7 @@
   function draw(t) {
     mount();
     const stage = Math.min(11, Math.floor(t));
-    if (stage !== lastStage) { svg.setAttribute('aria-label', `Farm to receipt: ${names[stage]}`); lastStage = stage; }
+    if (stage !== lastStage) { svg.setAttribute('aria-label', `Supplier to receipt: ${names[stage]}`); lastStage = stage; }
     const collect = phase(t, .38, .94), arriving = phase(t, 1, 1.94);
     const inbound = roadAt(mix(40, 295, phase(t, 0, .38)) + 615 * arriving);
     const outbound = roadAt(mix(1580, 2960, phase(t, 9.02, 9.73)));

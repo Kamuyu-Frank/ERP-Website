@@ -2,34 +2,34 @@ import { useEffect, useRef, type CSSProperties } from 'react';
 
 export const journeySteps = [
   {
-    "name": "Farm",
-    "title": "Every journey starts with a grower.",
-    "body": "Maize is harvested and gathered into sacks. Workers prepare the collection while the purchase order connects the grower to the mill.",
+    "name": "Supplier",
+    "title": "Every journey starts with a supplier.",
+    "body": "Raw materials are prepared for collection. The purchase order connects the supplier, the materials and the factory.",
     "record": "Purchase order",
     "ref": "PO-1048",
-    "event": "Farm collection arranged",
-    "detail": "Maize ready for collection",
+    "event": "Supplier collection arranged",
+    "detail": "Raw materials ready for collection",
     "module": "Purchasing",
     "icon": 0
   },
   {
     "name": "Transport",
-    "title": "Follow the road to the mill.",
-    "body": "The collection truck leaves the farm and follows the bends to the factory receiving bay. The incoming consignment stays linked to its purchase order.",
+    "title": "Follow the road to the factory.",
+    "body": "The collection truck leaves the supplier and follows the bends to the factory receiving bay. The incoming consignment stays linked to its purchase order.",
     "record": "Incoming shipment",
     "ref": "PO-1048",
     "event": "Collection in transit",
-    "detail": "Farm → factory",
+    "detail": "Supplier → factory",
     "module": "Purchasing",
     "icon": 5
   },
   {
     "name": "Receive",
     "title": "People handle every handover.",
-    "body": "The truck stops at the factory. Workers offload the sacks, check the delivery and bring the maize into the receiving area.",
+    "body": "The truck stops at the factory. Workers unload the raw materials, check the delivery and bring them into the receiving area.",
     "record": "Goods receipt",
     "ref": "GRN-1048",
-    "event": "Maize received at the mill",
+    "event": "Raw materials received at the factory",
     "detail": "Checked and received",
     "module": "Inventory",
     "icon": 1
@@ -37,21 +37,21 @@ export const journeySteps = [
   {
     "name": "Process",
     "title": "Watch the factory get to work.",
-    "body": "Inside the mill, maize moves along the conveyor into processing. The production work order connects the raw grain to the finished flour.",
+    "body": "Inside the factory, raw materials move through processing. The production work order connects the materials used to the finished goods.",
     "record": "Work order",
     "ref": "WO-0241",
-    "event": "Milling and packing illustrated",
-    "detail": "Maize → packaged flour",
+    "event": "Processing and packing illustrated",
+    "detail": "Raw materials → finished goods",
     "module": "Optional manufacturing",
     "icon": 2
   },
   {
     "name": "Stock",
     "title": "A place for every package.",
-    "body": "Packed flour moves into the warehouse. Workers place the finished goods on storage racks, ready for the next order.",
+    "body": "Finished goods moves into the warehouse. Workers place the finished goods on storage racks, ready for the next order.",
     "record": "Stock movement",
     "ref": "ST-0241",
-    "event": "Flour placed into storage",
+    "event": "Finished goods placed into storage",
     "detail": "24 packages available",
     "module": "Inventory",
     "icon": 1
@@ -59,7 +59,7 @@ export const journeySteps = [
   {
     "name": "Order",
     "title": "The next journey starts with a call.",
-    "body": "A customer calls the sales desk. The order is recorded and the required flour is reserved for a credit sale.",
+    "body": "A customer calls the sales desk. The order is recorded and the required goods is reserved for a credit sale.",
     "record": "Sales order",
     "ref": "SO-0286",
     "event": "Customer order confirmed",
@@ -70,7 +70,7 @@ export const journeySteps = [
   {
     "name": "Load",
     "title": "Pick it. Load it. Check it.",
-    "body": "The warehouse team picks the reserved flour and carries it to the delivery truck. The loaded goods are checked against the customer order.",
+    "body": "The warehouse team picks the reserved goods and carries it to the delivery truck. The loaded goods are checked against the customer order.",
     "record": "Picking list",
     "ref": "PICK-0286",
     "event": "Order picked and loaded",
@@ -81,7 +81,7 @@ export const journeySteps = [
   {
     "name": "Invoice",
     "title": "Give the shipment its invoice.",
-    "body": "Create the invoice for the loaded order. The customer, flour quantities and amount are recorded together. Payment will follow delivery.",
+    "body": "Create the invoice for the loaded order. The customer, item quantities and amount are recorded together. Payment will follow delivery.",
     "record": "Customer invoice",
     "ref": "INV-0286",
     "event": "Invoice created",
@@ -103,7 +103,7 @@ export const journeySteps = [
   {
     "name": "Deliver",
     "title": "Take the goods all the way.",
-    "body": "The delivery truck leaves the factory, follows the road downhill and turns with each bend. At the customer, workers unload the flour and confirm delivery.",
+    "body": "The delivery truck leaves the factory, follows the road downhill and turns with each bend. At the customer, workers unload the goods and confirm delivery.",
     "record": "Delivery note",
     "ref": "DSP-0286",
     "event": "Customer handover confirmed",
@@ -125,7 +125,7 @@ export const journeySteps = [
   {
     "name": "Receipt",
     "title": "Close the journey with a receipt.",
-    "body": "Issue the receipt, mark the invoice paid and bring the customer balance to zero. Every handover is connected, from the farm to the final record.",
+    "body": "Issue the receipt, mark the invoice paid and bring the customer balance to zero. Every handover is connected, from the supplier to the final record.",
     "record": "Customer receipt",
     "ref": "RCT-0286",
     "event": "Receipt issued",
