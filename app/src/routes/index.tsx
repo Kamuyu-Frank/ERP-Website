@@ -3,17 +3,15 @@ import { useEffect, useRef, useState, type CSSProperties, type FormEvent } from 
 import { journeySteps } from '@/components/snaperp/business-world';
 import { requestDemo } from '@/lib/api/demo.functions';
 const STAGE_COUNT=journeySteps.length;
-const TOUR_SECONDS=STAGE_COUNT*5;
 export const Route = createFileRoute('/')({ component: Home });
 function Brand(){return <a className="brand" href="/" aria-label="SnapERP home"><picture><source media="(prefers-reduced-motion: reduce)" srcSet="/assets/brand/logo-static.png"/><img src="/assets/brand/logo.gif" alt="SnapERP arithmetic tiles" width="48" height="48"/></picture><span>Snap<span className="brand-erp">ERP</span></span></a>}
 function Home(){
- const [menu,setMenu]=useState(false),[stage,setStage]=useState(0),[tour,setTour]=useState(false),[privacy,setPrivacy]=useState(false);
+ const [menu,setMenu]=useState(false),[stage,setStage]=useState(0),[privacy,setPrivacy]=useState(false);
  const sectionRef=useRef<HTMLElement>(null);
  const journeyFrame=useRef<HTMLIFrameElement>(null);
  const journeyTime=useRef(0);
  const syncJourney=()=>journeyFrame.current?.contentWindow?.postMessage({type:'snaperp-journey',progress:journeyTime.current},window.location.origin);
  useEffect(()=>{
-  if(tour)return;
   let frame=0;
   const sync=()=>{cancelAnimationFrame(frame);frame=requestAnimationFrame(()=>{
    const section=sectionRef.current;if(!section)return;
@@ -26,35 +24,9 @@ function Home(){
   });};
   window.addEventListener('scroll',sync,{passive:true});window.addEventListener('resize',sync);sync();
   return()=>{window.removeEventListener('scroll',sync);window.removeEventListener('resize',sync);cancelAnimationFrame(frame);};
- },[tour]);
- useEffect(()=>{
-  if(!tour)return;
-  const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  let frame=0;let start:number|null=null;
-  const initial=journeyTime.current>=STAGE_COUNT-.01?0:journeyTime.current*5;
-  const stop=()=>setTour(false);
-  window.addEventListener('wheel',stop,{passive:true});window.addEventListener('touchstart',stop,{passive:true});
-  const play=(now:number)=>{
-   if(start===null)start=now;
-   const elapsed=Math.min(TOUR_SECONDS,initial+(now-start)/1000);
-   const chapter=Math.min(STAGE_COUNT-1,Math.floor(elapsed/5));
-   setStage(chapter);
-   journeyTime.current=reduced?Math.min(STAGE_COUNT,chapter+1-.01):elapsed/5;
-   syncJourney();
-   const section=sectionRef.current;const sticky=section?.querySelector<HTMLElement>('.journey-sticky');
-   if(section&&sticky){const header=window.innerWidth<=800?70:78;window.scrollTo({top:window.scrollY+section.getBoundingClientRect().top-header+(section.offsetHeight-sticky.offsetHeight)*elapsed/TOUR_SECONDS,behavior:'instant'});}
-   if(elapsed<TOUR_SECONDS)frame=requestAnimationFrame(play);else setTour(false);
-  };
-  frame=requestAnimationFrame(play);
-  return()=>{cancelAnimationFrame(frame);window.removeEventListener('wheel',stop);window.removeEventListener('touchstart',stop);};
- },[tour]);
+ },[]);
  useEffect(()=>{if(privacy)document.getElementById('privacy-close')?.focus();},[privacy]);
  const closePrivacy=()=>{setPrivacy(false);document.querySelector<HTMLButtonElement>('.privacy-link')?.focus();};
- const jump=(i:number)=>{
-  setTour(false);const section=sectionRef.current;const sticky=section?.querySelector<HTMLElement>('.journey-sticky');if(!section||!sticky)return;
-  const header=window.innerWidth<=800?70:78;
-  window.scrollTo({top:window.scrollY+section.getBoundingClientRect().top-header+(section.offsetHeight-sticky.offsetHeight)*(i+.04)/STAGE_COUNT,behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});
- };
  const selected=journeySteps[stage];
  return <><a className="skip-link" href="#main">Skip to content</a>
  <header className="site-header"><div className="header-inner"><Brand/><button className="menu-toggle" aria-expanded={menu} aria-controls="site-nav" onClick={()=>setMenu(!menu)}>{menu?'Close':'Menu'}</button><nav id="site-nav" className={menu?'site-nav nav-open':'site-nav'} aria-label="Main navigation">{[['Workflow','#workflow'],['Features','#features'],['Integrations','#integrations'],['Pricing','#pricing']].map(([label,link])=><a key={label} href={link} onClick={()=>setMenu(false)}>{label}</a>)}<a className="sign-in" href="https://erp.werevu.co.ke/">Sign in ↗</a><a className="nav-demo" href="#demo" onClick={()=>setMenu(false)}>Book a demo ↗</a></nav></div></header>
@@ -69,11 +41,7 @@ function Home(){
     <p className="journey-description">{stage===0?"From the first maize sack to the final receipt. Scroll to drive the truck through a connected business.":selected.body}</p>
     {stage===0?<div className="journey-opening-actions"><a href="#demo">Book a demo ↗</a><span>Scroll to begin ↓</span></div>:<div className="journey-receipt"><span>{selected.record}</span><strong>{selected.ref}</strong><small>{selected.detail}</small></div>}
    </div>
-   <div className="journey-bottom">
-    <div className="journey-playback"><span>Scroll to follow the journey ↓</span><button className="tour-toggle" onClick={()=>setTour(!tour)} aria-pressed={tour}>{tour?'Pause tour Ⅱ':'Play tour ▷'}</button></div>
-    <nav className="stage-controls" aria-label="Choose a workflow stage">{journeySteps.map((s,i)=><button key={s.name} aria-pressed={stage===i} onClick={()=>jump(i)} title={s.name}><span>{String(i+1).padStart(2,'0')}</span><strong>{s.name}</strong></button>)}</nav>
-    <p className="illustration-note">Illustrative workflow · Integration setup and module availability confirmed during your demo.</p>
-   </div>
+
   </div>
  </section>
  <section className="integrations section-wrap" id="integrations"><div className="section-heading"><h2>Local connections.<br/>Clearer business records.</h2><p>Discuss the payment and tax-invoice setup your business needs.</p></div><div className="integration-layout"><div className="integration-rows"><article><div className="integration-name">M-Pesa<span>COLLECTIONS</span></div><h3>Connect payments to invoices.</h3><p>Explore payment requests and matching for configured collections. Confirm supported collection modes, onboarding and plan availability during your demo.</p><ul><li>Invoice payment requests</li><li>Configured collection matching</li><li>Connected customer receipts</li></ul></article><article><div className="integration-name">KRA eTIMS<span>TAX INVOICING</span></div><h3>Follow the invoice handoff.</h3><p>Explore configured invoice and credit-note stamping. Live onboarding, credentials and successful stamping must be confirmed for your setup.</p><ul><li>Configured invoice stamping</li><li>Credit-note workflow</li><li>Document traceability</li></ul></article></div><figure><img src="/assets/integrations.webp" alt="Concept sculpture connecting an invoice and a payment phone" loading="lazy" width="2048" height="1360"/><figcaption>Payments and invoices, connected in your workflow.</figcaption></figure></div></section>
