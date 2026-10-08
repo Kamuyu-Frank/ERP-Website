@@ -34,7 +34,7 @@ function player(reduced = true, width = 1400) {
     expect(callbacks.size).toBe(0);
   }
   function pose(time: number) {
-    window.renderJourneyChapter(Math.min(7, Math.floor(time)), time === 8 ? 1 : time % 1);
+    window.renderJourneyChapter(Math.min(11, Math.floor(time)), time === 12 ? 1 : time % 1);
     settle();
     return JSON.stringify([...nodes].map(([id, element]) => [id, element.attributes]));
   }
@@ -43,7 +43,7 @@ function player(reduced = true, width = 1400) {
 
 test('forward and backward seeking produce the same poses without replacing the scene', () => {
   const p = player();
-  const times = [0, .6, 1.5, 2.4, 3.4, 4.5, 5.5, 6.8, 7.4, 8];
+  const times = [0, .6, 1.5, 2.4, 3.4, 4.5, 5.5, 6.8, 7.4, 8.6, 9.4, 10.7, 11.5, 12];
   const poses = times.map(t => p.pose(t));
   for (let i = times.length - 1; i >= 0; i--) expect(p.pose(times[i])).toBe(poses[i]);
   expect(p.mounts).toBe(1);
@@ -51,7 +51,7 @@ test('forward and backward seeking produce the same poses without replacing the 
 
 test('chapter boundaries preserve the exact same scene pose', () => {
   const p = player();
-  for (let stage = 0; stage < 7; stage++) {
+  for (let stage = 0; stage < 11; stage++) {
     p.window.renderJourneyChapter(stage, 1);
     const before = [...p.nodes].map(([id, n]) => [id, { ...n.attributes }]);
     p.window.renderJourneyChapter(stage + 1, 0);
@@ -61,9 +61,9 @@ test('chapter boundaries preserve the exact same scene pose', () => {
 
 test('scroll smoothing settles and reduced motion renders without scheduling animation', () => {
   const normal = player(false), reduced = player(true);
-  normal.pose(0); normal.window.renderJourneyChapter(7, 1);
+  normal.pose(0); normal.window.renderJourneyChapter(11, 1);
   expect(normal.callbacks.size).toBe(1);
-  normal.settle(); reduced.pose(8);
+  normal.settle(); reduced.pose(12);
   expect(normal.nodes.get('#truck').attributes).toEqual(reduced.nodes.get('#truck').attributes);
   expect(reduced.callbacks.size).toBe(0);
   const mounts = normal.mounts;
@@ -75,20 +75,21 @@ test('scroll smoothing settles and reduced motion renders without scheduling ani
 test('delivery completes on credit before eTIMS invoice is settled through M-Pesa', () => {
   const p = player();
   const opacity = (id: string) => Number(p.nodes.get(`#${id}`).attributes.opacity);
-  p.pose(5.8);
+  p.pose(8.8);
   expect(opacity('tax-stamp')).toBe(1);
   expect(opacity('invoice-unpaid')).toBe(1);
   expect(opacity('payment-success')).toBe(0);
-  p.pose(6.98);
+  p.pose(9.98);
   expect(opacity('handover')).toBe(1);
   expect(opacity('invoice-unpaid')).toBe(1);
   expect(opacity('payment-success')).toBe(0);
-  p.pose(8);
-  expect(opacity('payment-panel')).toBe(1);
+  p.pose(12);
+  expect(opacity('receipt-panel')).toBe(1);
+  expect(opacity('receipt-lines')).toBe(1);
   expect(opacity('payment-success')).toBe(1);
   expect(opacity('invoice-unpaid')).toBe(0);
   expect(opacity('handover')).toBe(1);
-  p.pose(5.8);
+  p.pose(8.8);
   expect(opacity('payment-success')).toBe(0);
   expect(opacity('invoice-unpaid')).toBe(1);
 });
@@ -107,7 +108,39 @@ test('camera follows the route on desktop and mobile and reverses deterministica
   }
   const reduced = player(true);
   reduced.pose(0);
-  const overview = reduced.nodes.get('#campus').attributes.transform;
-  reduced.pose(8);
-  expect(reduced.nodes.get('#campus').attributes.transform).toBe(overview);
+  expect(reduced.callbacks.size).toBe(0);
+  reduced.pose(12);
+  expect(reduced.callbacks.size).toBe(0);
+});
+
+
+test('delivery vehicle travels down the road, steers around bends, then unloads before payment', () => {
+  const p = player();
+  const positions = [9.02, 9.2, 9.38, 9.55, 9.73].map(t => {
+    p.pose(t);
+    return p.nodes.get('#truck').attributes.transform.match(/-?[\d.]+/g).map(Number);
+  });
+  for (let i = 1; i < positions.length; i++) expect(positions[i][1]).toBeGreaterThan(positions[i - 1][1]);
+  expect(positions.some(pose => Math.abs(pose[2]) > 5)).toBe(true);
+  p.pose(9.98);
+  expect(Number(p.nodes.get('#handover').attributes.opacity)).toBe(1);
+  expect(Number(p.nodes.get('#payment-success').attributes.opacity)).toBe(0);
+  expect(Number(p.nodes.get('#receipt-panel').attributes.opacity)).toBe(0);
+  p.pose(10.8);
+  expect(Number(p.nodes.get('#payment-success').attributes.opacity)).toBe(1);
+  expect(Number(p.nodes.get('#receipt-panel').attributes.opacity)).toBe(0);
+});
+
+
+test('the opening truck continues into transport on one timeline without resetting', () => {
+  const p = player(false);
+  const y = () => Number(p.nodes.get('#supplier-truck').attributes.transform.match(/translate\([^ ]+ ([^)]+)\)/)[1]);
+  p.pose(0);const initial=y();
+  p.pose(.1);expect(y()).toBeGreaterThan(initial);
+  p.pose(.38);expect(y()).toBe(295);
+  p.pose(.99);const atFarm=y();
+  p.pose(1);expect(y()).toBe(atFarm);
+  p.pose(1.1);expect(y()).toBeGreaterThan(atFarm);
+  p.pose(0);expect(y()).toBe(initial);
+  expect(p.mounts).toBe(1);
 });

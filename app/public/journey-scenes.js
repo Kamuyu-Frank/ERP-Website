@@ -1,221 +1,201 @@
-/* Isometric scene renderer. Positions use a shared x/y/z world; SVG stays crisp on mobile. */
+/* Persistent SVG landscape. All business action is a reversible function of scroll progress. */
 (() => {
   const svg = document.getElementById('world');
-  const C = { bg:'#101b24',floor:'#17232d',top:'#526e80',left:'#2a4253',right:'#203342',edge:'#6c8b9e',accent:'#00a9d9',light:'#85dfff',white:'#f2f6f8',muted:'#abbcc7',deep:'#0b141c' };
-  const names=['Purchase','Receive','Process','Stock','Order','Invoice','Delivery','Payment'];
-  const clamp=v=>Math.max(0,Math.min(1,v));
-  const smooth=v=>{v=clamp(v);return v*v*(3-2*v);};
-  const point=(x,y,z=0)=>[450+(x-y)*.866,275+(x+y)*.5-z];
-  const coord=p=>p.map(v=>v.toFixed(2)).join(',');
-  const poly=(points,fill,extra='')=>`<polygon points="${points.map(coord).join(' ')}" fill="${fill}" stroke="${C.edge}" stroke-width=".7" stroke-opacity=".32" ${extra}/>`;
-  const line=(a,b,color=C.edge,width=1,extra='')=>`<path d="M${coord(a)} L${coord(b)}" fill="none" stroke="${color}" stroke-width="${width}" ${extra}/>`;
-  const text=(x,y,label,size=12,color=C.muted)=>`<text x="${x}" y="${y}" fill="${color}" font-family="system-ui" font-size="${size}" letter-spacing="1.3">${label}</text>`;
-  const cuboid=(x,y,z,w,d,h,accent=false)=>{
-    const a=point(x,y,z+h),b=point(x+w,y,z+h),c=point(x+w,y+d,z+h),e=point(x,y+d,z+h);
-    return poly([e,c,point(x+w,y+d,z),point(x,y+d,z)],accent?'#00698b':C.left)+poly([b,c,point(x+w,y+d,z),point(x+w,y,z)],accent?'#0089b0':C.right)+poly([a,b,c,e],accent?C.accent:C.top);
-  };
-  const carton=(x,y,z=0,size=28)=>cuboid(x,y,z,size,size,size,true)+line(point(x+size/2,y,z+size+.5),point(x+size/2,y+size,z+size+.5),C.light,2)+line(point(x+size/2,y+size,z+size),point(x+size/2,y+size,z+3),C.light,2);
-  const pallet=(x,y)=>{let s='';for(let i=0;i<4;i++)s+=cuboid(x+i*17,y,0,12,65,6);return s;};
-  const shadow=(x,y,w=70)=>{const p=point(x,y);return `<ellipse cx="${p[0]}" cy="${p[1]+5}" rx="${w}" ry="${w*.32}" fill="${C.deep}" opacity=".65"/>`;};
-  // Model stays mounted: wheel rotation follows distance, including reverse seeking.
-  const truck=()=>{
-    let s=shadow(63,28,96)+cuboid(0,0,21,143,55,10);
-    s+=cuboid(0,0,33,87,55,57).replaceAll(C.top,'#d3e1e9').replaceAll(C.left,'#8fa8b9').replaceAll(C.right,'#628298');
-    for(let i=0;i<8;i++)s+=line(point(6+i*10,55.5,38),point(6+i*10,55.5,85),'#b6cbd7',.8);
-    s+=poly([point(0,55.8,56),point(87,55.8,56),point(87,55.8,68),point(0,55.8,68)],'#008db7');
-    const brand=point(13,56,72);
-    s+=`<text transform="matrix(.866 .5 0 -1 ${brand[0]} ${brand[1]}) scale(1 -1)" font-family="system-ui" font-size="11" font-weight="700" fill="#f4fbff">SNAP ERP</text>`;
-    // Sloped windscreen and roof, with a separate bumper and wheel arches.
-    s+=poly([point(92,55,33),point(143,55,33),point(143,55,62),point(131,55,85),point(96,55,85)],'#009bc5');
-    s+=poly([point(92,0,33),point(143,0,33),point(143,0,62),point(131,0,85),point(96,0,85)],'#027798');
-    s+=poly([point(96,0,85),point(131,0,85),point(131,55,85),point(96,55,85)],'#56d5ee');
-    s+=poly([point(131,0,85),point(143,0,62),point(143,55,62),point(131,55,85)],'#123349');
-    s+=poly([point(132,5,81),point(141,5,64),point(141,49,64),point(132,49,81)],'#7bc8df');
-    s+=line(point(132,8,80),point(139,8,66),'#dcf8ff',2);
-    s+=poly([point(100,55.7,79),point(127,55.7,79),point(138,55.7,62),point(100,55.7,62)],'#143e56');
-    s+=line(point(102,56,77),point(124,56,77),'#83d5ea',2);
-    s+=line(point(97,56,57),point(97,56,38),'#006888',1.4)+line(point(101,56,56),point(110,56,56),'#cff5ff',2);
-    s+=poly([point(143,0,33),point(143,55,33),point(143,55,62),point(143,0,62)],'#0088ad');
-    s+=cuboid(143,3,28,5,49,7).replaceAll(C.top,'#bccdd8');
-    for(let i=0;i<3;i++)s+=line(point(143.5,15,42+i*4),point(143.5,40,42+i*4),'#102c3e',2);
-    for(const y of [5,44])s+=poly([point(144,y,48),point(144,y+7,48),point(144,y+7,55),point(144,y,55)],'#fff0b7');
-    s+=line(point(128,57,67),point(130,65,65),'#92bbcd',2)+cuboid(126,63,61,7,4,10);
-    for(const x of [20,112]){
-      const q=point(x,57,20);
-      s+=`<g transform="translate(${q[0]} ${q[1]})"><ellipse rx="12" ry="17" fill="#08121b" stroke="#294151" stroke-width="4"/><ellipse rx="7.5" ry="11" fill="#91aaba"/><g data-wheel transform="rotate(0)"><path d="M0-9V9M-6 0H6M-4-6L4 6M-4 6L4-6" stroke="#e2edf3" stroke-width="1.6"/></g><ellipse rx="2.5" ry="3.5" fill="#244458"/></g>`;
-    }
-    return s;
-  };
-  const building=(x,y,w=125,d=85,h=100)=>{
-    let s=cuboid(x,y,0,w,d,h);
-    for(let i=0;i<3;i++){const sx=x+10+i*35;s+=poly([point(sx,y+d+.5,78),point(sx+23,y+d+.5,78),point(sx+23,y+d+.5,52),point(sx,y+d+.5,52)],'#267393');}
-    s+=poly([point(x+w+.5,y+20,60),point(x+w+.5,y+65,60),point(x+w+.5,y+65,0),point(x+w+.5,y+20,0)],C.deep);
-    return s;
-  };
-  const conveyor=(x,y,length,p)=>{
-    let s=cuboid(x,y,24,length,42,9);
-    for(let i=0;i<13;i++){const offset=(i*18+p*100)%length;s+=line(point(x+offset,y,34),point(x+offset,y+42,34),C.edge,3);}
-    for(const dx of [12,length-20])s+=cuboid(x+dx,y+6,0,7,30,24);
-    return s;
-  };
-  const cog=(x,y,z,p)=>{const q=point(x,y,z);return `<g transform="translate(${q[0]} ${q[1]}) scale(.866 1)"><g transform="rotate(${p*1080})">${Array.from({length:8},(_,i)=>`<rect x="-4" y="-29" width="8" height="12" rx="2" fill="${C.accent}" transform="rotate(${i*45})"/>`).join('')}<circle r="21" fill="${C.top}" stroke="${C.light}" stroke-width="2"/><circle r="8" fill="${C.deep}"/><path d="M0-16v8M0 8v8M-16 0h8M8 0h8" stroke="${C.light}" stroke-width="3"/></g></g>`;};
-  const group=(id,content)=>`<g id="${id}">${content}</g>`;
-  const windows=(x,y,w)=>{let result='';for(let i=0;i<3;i++)result+=cuboid(x+8+i*w/3,y,70,18,1,18).replaceAll(C.top,C.light);return result;};
-  const sack=(x,y,z=0)=>{const q=point(x,y,z);return `<g transform="translate(${q[0]} ${q[1]})"><path d="M-7-31Q0-27 7-31L6-25Q18-5 10 0Q0 5-10 0Q-18-5-6-25Z" fill="#c8ae78" stroke="#edd5a5" stroke-width="1"/><path d="M-6-25H6M-6-12Q0-7 6-12" fill="none" stroke="#80683f" stroke-width="1.5"/></g>`;};
-  const farm=()=>{
-    let s=poly([point(-310,-125),point(-180,-125),point(-180,-5),point(-310,-5)],'#354f30');
-    for(let row=0;row<4;row++)for(let col=0;col<6;col++){
-      const q=point(-299+col*20,-110+row*27);
-      s+=`<g transform="translate(${q[0]} ${q[1]})"><path d="M0 0V-30M0-8Q-13-22-13-15Q-7-6 0-5M0-17Q12-30 12-22Q7-14 0-13" fill="#548844" stroke="#85b965" stroke-width="1.5"/><ellipse cx="3" cy="-21" rx="3" ry="7" fill="#e8c263"/></g>`;
-    }
-    return s+sack(-195,20)+sack(-217,14)+sack(-204,35);
-  };
-  let mounted=false, target=0, displayed=0, frame=0, previous=0, lastStage=-1;
-  const reduced=window.matchMedia('(prefers-reduced-motion: reduce)');
-  let nodes, wheels;
-  function mount(){
-    if(mounted)return;
-    mounted=true;
-    svg.setAttribute('viewBox',window.innerWidth<=800?'0 0 600 850':'0 0 1400 800');
+  const names = ['Farm', 'Transport', 'Receive', 'Process', 'Stock', 'Order', 'Load', 'Invoice', 'eTIMS', 'Deliver', 'Pay', 'Receipt'];
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const clamp = v => Math.max(0, Math.min(1, v));
+  const ease = v => { v = clamp(v); return v * v * (3 - 2 * v); };
+  const phase = (t, a, b) => ease((t - a) / (b - a));
+  const mix = (a, b, p) => a + (b - a) * p;
+  const roadStops = [[0, 520], [350, 520], [760, 420], [1120, 420], [1510, 510], [1840, 510], [2230, 350], [2510, 350], [2870, 510], [3300, 510]];
+  function roadAt(y) {
+    let i = 0;
+    while (i < roadStops.length - 2 && y > roadStops[i + 1][0]) i++;
+    const [ya, xa] = roadStops[i], [yb, xb] = roadStops[i + 1];
+    const p = clamp((y - ya) / (yb - ya));
+    const slope = (xb - xa) * 6 * p * (1 - p) / (yb - ya);
+    return { x: mix(xa, xb, ease(p)), y, angle: -Math.atan(slope) * 180 / Math.PI };
+  }
+  const text = (x, y, value, size = 13, fill = '#bdd0d8', extra = '') => `<text x="${x}" y="${y}" fill="${fill}" font-size="${size}" font-family="system-ui,sans-serif" ${extra}>${value}</text>`;
+  const group = (id, markup, extra = '') => `<g id="${id}" ${extra}>${markup}</g>`;
+  const sack = '<path d="M-8-19Q0-16 8-19L7-13Q19 12 10 17Q0 22-10 17Q-19 12-7-13Z" fill="#d8bd86" stroke="#f1dcad"/><path d="M-7-13H7M-8 5Q0 11 8 5" fill="none" stroke="#947741" stroke-width="2"/>';
+  const pack = '<path d="M-14-13L8-17L17-10V15L-5 19L-14 12Z" fill="#e3e6dc" stroke="#8ba1a6"/><path d="M-14-13L-5-6L17-10M-5-6V19" fill="none" stroke="#fff"/><path d="M-5 2L17-2V7L-5 11Z" fill="#208b9d"/><text x="-1" y="6" font-family="system-ui" font-size="5" fill="white">FLOUR</text>';
+  function tree(x, y, s = 1) {
+    return `<g transform="translate(${x} ${y}) scale(${s})"><ellipse cy="14" rx="23" ry="13" fill="#0d1c20" opacity=".35"/><path d="M0 10V-19" stroke="#8a7960" stroke-width="6"/><circle cy="-18" r="24" fill="#345f4c"/><circle cx="-9" cy="-27" r="15" fill="#4d775b"/><circle cx="9" cy="-21" r="14" fill="#406f51"/></g>`;
+  }
+  function person(id, color = '#e6ac51', carrying = false) {
+    return group(id, `<ellipse cy="24" rx="15" ry="6" fill="#07171d" opacity=".4"/>
+      <g id="${id}-left"><path d="M-5 5L-7 23" stroke="#234152" stroke-width="7" stroke-linecap="round"/></g>
+      <g id="${id}-right"><path d="M5 5L7 23" stroke="#234152" stroke-width="7" stroke-linecap="round"/></g>
+      <rect x="-10" y="-17" width="20" height="27" rx="7" fill="${color}"/>
+      <path d="M-6-14V6M6-14V6" stroke="#eee9b9" stroke-width="2"/>
+      <path d="M-10-9L-16 5M10-9L16 5" fill="none" stroke="#bd8c64" stroke-width="6" stroke-linecap="round"/>
+      <circle cy="-22" r="9" fill="#bd8c64"/><path d="M-10-23Q-9-36 0-34Q9-34 10-23Z" fill="#f0c466"/>
+      ${carrying ? `<g id="${id}-cargo" transform="translate(0 7) scale(.65)">${sack}</g>` : ''}`);
+  }
+  function vehicle(id, green = false) {
+    const body = green ? '#678e63' : '#0796b0';
+    return group(id, `<ellipse cy="12" rx="48" ry="88" fill="#06171e" opacity=".35"/>
+      <rect x="-36" y="-53" width="9" height="25" rx="4" fill="#08131c"/><rect x="27" y="-53" width="9" height="25" rx="4" fill="#08131c"/>
+      <rect x="-37" y="43" width="10" height="24" rx="4" fill="#08131c"/><rect x="27" y="43" width="10" height="24" rx="4" fill="#08131c"/>
+      <rect x="-31" y="-76" width="62" height="115" rx="5" fill="#8098a6"/>
+      <rect x="-29" y="-78" width="58" height="108" rx="4" fill="url(#cargo-metal)"/>
+      ${Array.from({ length: 10 }, (_, i) => `<path d="M-25 ${-69 + i * 9}H25" stroke="#a8becb" stroke-width="1"/>`).join('')}
+      <path d="M-29 31V70Q-27 81-17 83H17Q27 81 29 70V42L22 30Z" fill="${body}" stroke="#82ced9"/>
+      <path d="M-23 47H23L20 65H-20Z" fill="#143c50"/>
+      <path d="M-20 49H20L17 55H-17Z" fill="#8bcad9"/>
+      <path d="M-25 70H25M-11 78H11" stroke="#c0d9dd" stroke-width="3"/>
+      <rect x="-28" y="71" width="10" height="6" rx="2" fill="#fff0bd"/><rect x="18" y="71" width="10" height="6" rx="2" fill="#fff0bd"/>
+      <path d="M-29 47H-39M29 47H39" stroke="#a2b6c1" stroke-width="3"/>
+      <rect x="-42" y="43" width="7" height="12" rx="2" fill="#213d4b"/><rect x="35" y="43" width="7" height="12" rx="2" fill="#213d4b"/>
+      <rect x="-29" y="-21" width="58" height="20" fill="${body}"/>
+      ${text(0, -7, green ? 'FARM' : 'SNAP ERP', 9, '#fff', 'text-anchor="middle" font-weight="700"')}
+      <path d="M-21 83L-29 120M21 83L29 120" stroke="#ffeeae" stroke-width="12" opacity=".055"/>`);
+  }
+  function building(x, y, w, h, title, interior = '') {
+    return `<g transform="translate(${x} ${y})"><rect x="9" y="12" width="${w}" height="${h}" rx="9" fill="#0a1b23" opacity=".45"/>
+      <rect width="${w}" height="${h}" rx="7" fill="#304957" stroke="#60808e" stroke-width="2"/>
+      <path d="M0 25V0H${w}V25" fill="#5e7987"/>
+      ${text(16, 17, title, 10, '#e2eef1', 'letter-spacing="2"')}
+      <rect x="12" y="36" width="${w - 24}" height="${h - 48}" rx="3" fill="#203540"/>
+      ${interior}</g>`;
+  }
+  function shelf(x, y) {
+    return `<g transform="translate(${x} ${y})"><rect width="220" height="62" rx="3" fill="#172b35" stroke="#66808b"/>
+    <path d="M0 25H220M0 56H220M8 0V62M212 0V62" stroke="#a5a68c" stroke-width="4"/></g>`;
+  }
+  const belt = (x, y, w, h) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="8" fill="#142a36" stroke="#7695a2" stroke-width="4"/>${Array.from({ length: Math.floor(h / 13) }, (_, i) => `<path d="M${x + 5} ${y + 7 + i * 13}H${x + w - 5}" stroke="#4d6978" stroke-width="3"/>`).join('')}`;
+  let mounted = false, target = 0, displayed = 0, frame = 0, previous = 0, lastStage = -1;
+  let nodes;
+  const ids = ['campus', 'supplier-truck', 'truck', 'farm-worker', 'receiver', 'stock-worker', 'loader', 'customer-worker', 'raw-goods', 'finished-goods', 'truck-load', 'handover', 'machine-wheel', 'order-call', 'order-signal', 'invoice-panel', 'tax-panel', 'tax-packet', 'tax-sending', 'tax-stamp', 'invoice-unpaid', 'payment-panel', 'payment-check', 'payment-pending', 'payment-success', 'receipt-panel', 'receipt-lines', ...Array.from({ length: 8 }, (_, i) => `stock-${i}`)];
+  const workerIds = ['farm-worker', 'receiver', 'stock-worker', 'loader', 'customer-worker'];
+  function mount() {
+    if (mounted) return;
+    mounted = true;
     svg.removeAttribute('aria-labelledby');
-    const floor=poly([point(-350,-145,-5),point(430,-145,-5),point(430,215,-5),point(-350,215,-5)],'url(#campus-floor)');
-    let grid='';for(let x=-330;x<430;x+=40)grid+=line(point(x,-140,-4),point(x,210,-4),'#68879a',.5,'opacity=".13"');
-    for(let y=-130;y<215;y+=40)grid+=line(point(-345,y,-4),point(425,y,-4),'#68879a',.5,'opacity=".13"');
-    const road=poly([point(-345,115,0),point(420,115,0),point(420,198,0),point(-345,198,0)],'#14232f')+line(point(-345,157,1),point(420,157,1),'#7c9baa',1.8,'stroke-dasharray="12 13" opacity=".45"');
-    const supplier=farm();
-    const warehouse=building(100,-110,115,85,105)+pallet(110,0);
-    const customer=building(300,-105,80,70,80);
-    const machine=cuboid(-65,-25,33,82,62,73)+cuboid(-53,-18,106,58,48,15,true);
-    const label=(x,y,title)=>{const q=point(x,y);return text(q[0],q[1],title,10,C.muted);};
-    const records=['PURCHASE ORDER','GOODS RECEIPT','WORK ORDER','FINISHED STOCK','SALES ORDER','CUSTOMER INVOICE','DELIVERY NOTE','PAYMENT RECEIPT'];
-    const refs=['PO-1048','GRN-1048','WO-0241','ST-0241','SO-0286','INV-0286','DSP-0286','RCT-0286'];
-    const details=['Maize collection','Maize received','Milling maize flour','24 flour packages','Credit sale · reserved','KSh 48,000 · unpaid','Delivered · unpaid','M-Pesa · receipt matched'];
-    svg.innerHTML=`<title>One connected business journey</title><defs><linearGradient id="campus-floor" x2="0.8" y2="1"><stop stop-color="#263d4e"/><stop offset="1" stop-color="#14242f"/></linearGradient><radialGradient id="ambient"><stop stop-color="#263f51"/><stop offset="1" stop-color="#101b24"/></radialGradient></defs><rect width="1400" height="850" fill="#17232d"/>
-    <g id="campus" transform="translate(40 105) scale(.86)">${floor}${grid}${road}
-    ${supplier}${warehouse}${customer}
-    ${label(-310,-155,'MAIZE FARM')}${label(100,-125,'WAREHOUSE')}${label(300,-120,'CUSTOMER')}
-    ${conveyor(-180,0,290,0)}
-    ${group('raw-goods',sack(0,0))}
-    ${machine}${group('machine-wheel',cog(0,0,0,0))}
-    ${group('finished-goods',carton(0,0,0,24))}
-    ${group('stock-goods',carton(115,0,7,24)+carton(142,0,7,24)+carton(115,27,7,24))}
-    ${group('supplier-truck',truck().replaceAll('SNAP ERP','FARM SUPPLY').replaceAll('#009bc5','#719456').replaceAll('#56d5ee','#acc784'))}
-    ${group('truck',truck())}
-    ${group('transfer-goods',sack(0,0))}
-    ${group('truck-load',carton(0,0,0,22))}
-    ${group('handover',carton(0,0,0,24))}
-    ${label(-80,-65,'MAIZE MILL')}
+    let road = '';
+    for (let y = 0; y <= 3300; y += 10) { const p = roadAt(y); road += `${y ? 'L' : 'M'}${p.x.toFixed(2)} ${y} `; }
+    let crops = '';
+    for (let r = 0; r < 7; r++) for (let c = 0; c < 7; c++) crops += `<g class="maize" style="animation-delay:${(r + c) * -.3}s" transform="translate(${92 + c * 34} ${128 + r * 32})"><path d="M0 10V-15M0 2Q-15-12-10-9M0-5Q14-22 10-15" fill="none" stroke="#739866" stroke-width="3"/><ellipse cx="3" cy="-11" rx="4" ry="8" fill="#d9bf65"/></g>`;
+    let trees = '';
+    for (let i = 0; i < 30; i++) { const y = 100 + i * 108; trees += tree(i % 2 ? 40 : 970, y, .7 + (i % 3) * .15); }
+    const invoice = `<rect width="520" height="185" rx="10" fill="#f0f4f4"/>${text(24, 30, 'CUSTOMER INVOICE', 12, '#476472', 'letter-spacing="2"')}${text(24, 62, 'INV-0286', 25, '#193340')}${text(24, 91, '24 flour packages · Credit sale', 13, '#59717d')}<path d="M24 111H490" stroke="#beced3"/>${text(24, 141, 'TOTAL  KSh 48,000', 18, '#193340')}<g id="invoice-unpaid">${text(340, 141, 'UNPAID', 13, '#997136', 'font-weight="700"')}</g>${text(24, 166, 'ILLUSTRATIVE RECORD', 9, '#71858b')}`;
+    svg.innerHTML = `<title>From the farm to the final receipt</title><defs><linearGradient id="cargo-metal" x2="1" y2="0"><stop stop-color="#c3d2db"/><stop offset=".5" stop-color="#edf3f4"/><stop offset="1" stop-color="#b0c3ce"/></linearGradient></defs>
+    <rect width="1600" height="1400" fill="#17232d"/>
+    <g id="campus"><rect x="0" y="-180" width="1010" height="3650" rx="80" fill="#1b3035"/>
+      <path d="${road}" fill="none" stroke="#0e2029" stroke-width="132"/><path d="${road}" fill="none" stroke="#49606a" stroke-width="118"/><path d="${road}" fill="none" stroke="#263944" stroke-width="110"/>
+      <path d="${road}" fill="none" stroke="#c7be92" stroke-width="2" stroke-dasharray="18 20"/>
+      ${trees}
+      <path d="M345 275H520M420 925H615M510 1580H650M510 2960H640" fill="none" stroke="#52666a" stroke-width="48"/>
+      <rect x="65" y="92" width="272" height="264" rx="14" fill="#344831" stroke="#667957"/>${crops}
+      ${building(95, 385, 190, 95, 'GROWER COLLECTION', `<path d="M20 45H165M20 68H165" stroke="#678477" stroke-width="3"/>`)}
+      ${text(75, 69, '01 / THE FARM', 17, '#dae5d7', 'letter-spacing="3"')}
+      <g transform="translate(340 250)">${sack}</g><g transform="translate(355 280)">${sack}</g>
+      ${building(610, 755, 300, 425, 'MAIZE MILL / CUTAWAY', `${belt(32, 80, 58, 305)}<rect x="115" y="135" width="147" height="151" rx="12" fill="#66818b"/><rect x="130" y="150" width="117" height="75" rx="5" fill="#14323f"/><path d="M170 70V135M206 70V135" stroke="#8ca5ac" stroke-width="18"/>${text(137, 254, 'MILL / 01', 13, '#ecf0e9')}<path d="M90 345H252V408" fill="none" stroke="#698692" stroke-width="30"/>`)}
+      <path d="M862 1163V1320" stroke="#66828e" stroke-width="30"/><path d="M862 1163V1320" stroke="#263f4c" stroke-width="20" stroke-dasharray="6 6"/>
+      ${building(635, 1310, 290, 360, 'FINISHED GOODS / FLOUR', shelf(34, 70) + shelf(34, 166) + `<path d="M0 286H68" stroke="#a6b5b6" stroke-width="24"/>`)}
+      ${building(640, 1745, 270, 130, 'SALES DESK', '<rect x="30" y="65" width="170" height="35" rx="5" fill="#8d9c92"/><rect x="115" y="44" width="50" height="32" rx="4" fill="#88b6bf"/>')}
+      ${group('order-call', `<rect x="0" y="0" width="46" height="74" rx="8" fill="#dae4e4"/><rect x="5" y="10" width="36" height="50" rx="3" fill="#237b76"/><path d="M13 22Q9 43 29 49L34 40L25 35L20 38L18 31L21 28Z" fill="#ecf4ed"/><g id="order-signal"><path d="M-9 15Q-24 35-9 54M55 15Q70 35 55 54" fill="none" stroke="#75d5b6" stroke-width="3"/></g>`, 'transform="translate(690 1803)"')}
+      ${text(280, 2160, 'DISPATCH ROUTE', 12, '#9db3b9', 'letter-spacing="3"')}
+      ${building(635, 2830, 280, 225, 'CUSTOMER / RETAIL STORE', '<path d="M15 40H264" stroke="#83a89b" stroke-width="19"/><rect x="32" y="77" width="89" height="91" fill="#75939c"/><rect x="159" y="77" width="89" height="91" fill="#172e3a"/><path d="M180 80V162M159 118H245" stroke="#496772" stroke-width="4"/>')}
+      ${vehicle('supplier-truck', true)}${vehicle('truck')}
+      ${person('farm-worker', '#bba55d', true)}${person('receiver', '#d4a456', true)}${person('stock-worker', '#70aab4')}${person('loader', '#d4a456')}${person('customer-worker', '#739e8b')}
+      ${group('raw-goods', sack)}${group('finished-goods', pack)}${group('truck-load', pack)}${group('handover', pack)}
+      ${Array.from({ length: 8 }, (_, i) => group(`stock-${i}`, pack, `transform="translate(${690 + (i % 4) * 47} ${1407 + Math.floor(i / 4) * 96})"`)).join('')}
+      ${group('machine-wheel', '<circle r="27" fill="#294754" stroke="#8cc0c8" stroke-width="5"/><path d="M0-23V23M-23 0H23M-16-16L16 16M-16 16L16-16" stroke="#91b8bf" stroke-width="5"/><circle r="8" fill="#122b38"/>')}
     </g>
-    <g visibility="hidden" transform="translate(35 20)"><rect width="244" height="112" rx="12" fill="#142734" stroke="#345164"/><rect x="0" y="20" width="3" height="30" rx="1.5" fill="${C.accent}"/>
-    ${records.map((title,i)=>`<g id="record-${i}" opacity="0">${text(18,25,title,9,C.light)}${text(18,53,refs[i],19,C.white)}${text(18,78,details[i],10,C.muted)}</g>`).join('')}
-    <path d="M18 96H225" stroke="#355060"/><path id="record-progress" d="M18 96H225" stroke="#00b7df" stroke-width="2" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1"/></g>
-    <g id="tax-panel" transform="translate(310 20)" opacity="0">
-      <rect width="655" height="112" rx="12" fill="#f4f7fa"/>
-      <svg x="16" y="12" width="128" height="54" viewBox="0 125 512 240"><image href="/assets/integrations/etims.png" width="512" height="512"/></svg>
-      ${text(20,92,'KRA eTIMS',10,'#344b59')}
-      <path d="M162 52H255" fill="none" stroke="#8ba6b4" stroke-dasharray="5 5"/>
-      <circle id="tax-packet" cx="164" cy="52" r="5" fill="#00a9d9"/>
-      ${text(275,26,'INV-0286 · KSh 48,000',12,'#203342')}
-      <g id="tax-sending">${text(275,52,'Submitting to eTIMS…',13,'#536d7c')}</g>
-      <g id="tax-stamp" opacity="0"><rect x="270" y="36" width="206" height="32" rx="5" fill="#e4f2e9" stroke="#388358" stroke-width="2"/>${text(283,57,'✓ eTIMS VALIDATED',12,'#21663e')}</g>
-      <g id="invoice-unpaid">${text(275,93,'UNPAID · CREDIT SALE',10,'#926016')}</g>
-      <g id="invoice-paid" opacity="0">${text(275,93,'PAID · BALANCE KSh 0',10,'#21663e')}</g>
-      ${text(521,94,'DEMO',9,'#728791')}
-    </g>
-    <g id="payment-panel" transform="translate(310 20)" opacity="0">
-      <rect width="655" height="112" rx="12" fill="#f4f7fa"/>
-      <image href="/assets/integrations/mpesa.webp" x="17" y="15" width="138" height="77" preserveAspectRatio="xMidYMid meet"/>
-      <g transform="translate(182 9)"><rect width="53" height="94" rx="9" fill="#182e3c"/><rect x="5" y="13" width="43" height="66" rx="3" fill="#e8f4e7"/><path d="M18 7H35" stroke="#8ba6b4" stroke-width="2"/><circle cx="27" cy="86" r="3" fill="#8ba6b4"/><g id="payment-check" opacity="0"><path d="M14 46L23 55L39 34" fill="none" stroke="#2e9b45" stroke-width="4"/></g></g>
-      ${text(263,26,'M-PESA · INV-0286',12,'#203342')}
-      <g id="payment-pending">${text(263,53,'Awaiting customer payment',13,'#536d7c')}${text(263,81,'Delivered · KSh 48,000 unpaid',10,'#926016')}</g>
-      <g id="payment-success" opacity="0">${text(263,53,'✓ PAYMENT RECEIVED',13,'#21663e')}${text(263,81,'RCT-0286 · Paid · Balance KSh 0',10,'#21663e')}</g>
-      ${text(521,94,'DEMO',9,'#728791')}
-    </g>
-    <g visibility="hidden" transform="translate(36 638)">${text(0,0,'FARM',9)}<path d="M85-4H805" stroke="#355060" stroke-dasharray="4 7"/><circle id="journey-dot" cx="85" cy="-4" r="4" fill="${C.light}"/>${text(824,0,'PAID',9)}</g>`;
-    wheels={delivery:svg.querySelector('#truck').querySelectorAll('[data-wheel]'),supplier:svg.querySelector('#supplier-truck').querySelectorAll('[data-wheel]')};
-    nodes=Object.fromEntries(['tax-panel','tax-packet','tax-sending','tax-stamp','invoice-unpaid','invoice-paid','payment-panel','payment-check','payment-pending','payment-success','supplier-truck','campus','raw-goods','finished-goods','stock-goods','truck','transfer-goods','truck-load','handover','machine-wheel','record-progress','journey-dot',...records.map((_,i)=>`record-${i}`)].map(id=>[id,svg.querySelector(`#${id}`)]));
+    ${group('invoice-panel', invoice)}
+    ${group('tax-panel', `<rect width="520" height="185" rx="10" fill="#f0f4f4"/><svg x="24" y="15" width="136" height="65" viewBox="0 125 512 240"><image href="/assets/integrations/etims.png" width="512" height="512"/></svg>${text(24, 112, 'KRA eTIMS', 15, '#193340')}${text(24, 143, 'INV-0286', 12, '#59717d')}<path d="M182 66H236" stroke="#8da8b0" stroke-dasharray="5 5"/><circle id="tax-packet" cy="66" r="5" fill="#2e9daa"/><g id="tax-sending">${text(258, 66, 'Submitting invoice…', 15, '#59717d')}</g><g id="tax-stamp"><rect x="246" y="36" width="250" height="62" rx="6" fill="#e4efe6" stroke="#447956" stroke-width="3"/>${text(270, 62, '✓ eTIMS VALIDATED', 16, '#315e3f', 'font-weight="700"')}${text(270, 82, 'Electronic validation', 11, '#447956')}</g>${text(256, 132, 'UNPAID · CREDIT SALE', 12, '#997136')}${text(24, 166, 'ILLUSTRATIVE SUBMISSION', 9, '#71858b')}`)}
+    ${group('payment-panel', `<rect width="520" height="185" rx="10" fill="#f0f4f4"/><image href="/assets/integrations/mpesa.webp" x="22" y="12" width="143" height="83"/><g transform="translate(70 100)"><rect width="38" height="66" rx="7" fill="#193744"/><rect x="4" y="9" width="30" height="45" rx="3" fill="#e4f2df"/><g id="payment-check"><path d="M9 30L17 37L30 19" fill="none" stroke="#3b8f48" stroke-width="3"/></g></g>${text(204, 32, 'M-PESA PAYMENT', 14, '#193340', 'letter-spacing="1"')}<g id="payment-pending">${text(204, 76, 'Awaiting customer', 20, '#476472')}${text(204, 108, 'KSh 48,000 · Delivered', 14, '#59717d')}</g><g id="payment-success">${text(204, 76, '✓ Payment received', 20, '#315e3f')}${text(204, 108, 'KSh 48,000 matched', 14, '#315e3f')}</g>${text(204, 154, 'ILLUSTRATIVE PAYMENT', 9, '#71858b')}`)}
+    ${group('receipt-panel', `<path d="M0 0H520V180L507 185L494 180L481 185L468 180L455 185H0Z" fill="#f0f4f4"/>${text(24, 30, 'PAYMENT RECEIPT', 12, '#476472', 'letter-spacing="2"')}${text(24, 62, 'RCT-0286', 25, '#193340')}<g id="receipt-lines">${text(24, 91, 'Invoice INV-0286 · M-Pesa', 14, '#59717d')}<path d="M24 111H490" stroke="#beced3"/>${text(24, 141, 'BALANCE  KSh 0', 19, '#315e3f')}${text(402, 141, '✓ PAID', 16, '#315e3f', 'font-weight="700"')}</g>${text(24, 167, 'DELIVERED. PAID. RECORDED.', 10, '#71858b')}`)}
+    `;
+    nodes = Object.fromEntries([...ids, ...workerIds.flatMap(id => [`${id}-left`, `${id}-right`, `${id}-cargo`])].map(id => [id, svg.querySelector(`#${id}`)]));
   }
-  const phase=(t,a,b)=>smooth((t-a)/(b-a));
-  const mix=(a,b,p)=>a+(b-a)*p;
-  const alpha=(id,v)=>nodes[id].setAttribute('opacity',clamp(v));
-  const position=(id,x,y,z=0,scale=1)=>{const q=point(x,y,z);nodes[id].setAttribute('transform',`translate(${q[0]} ${q[1]}) scale(${scale}) translate(-450 -275)`);};
-  // Camera keyframes share the goods timeline: no scene cuts at stage boundaries.
-  const cameraStops=[
-    [-230,0,1.9],[-145,30,1.8],[-70,0,2.1],[50,0,2],
-    [120,5,1.85],[140,10,1.8],[120,60,1.7],[300,60,1.9],[280,40,1.7],
-  ];
-  function camera(t){
-    const mobile=window.innerWidth<=800;
-    const i=Math.min(7,Math.floor(t)),p=smooth(t-i),a=cameraStops[i],b=cameraStops[i+1];
-    const x=mix(a[0],b[0],p),y=mix(a[1],b[1],p);
-    const focus=point(x,y,35);
-    const scale=reduced.matches?(mobile?.75:1.15):mix(a[2],b[2],p)*(mobile?.85:1);
-    const center=reduced.matches?point(50,30):focus;
-    const tx=(mobile?300:950)-center[0]*scale,ty=(mobile?580:430)-center[1]*scale;
-    nodes.campus.setAttribute('transform',`translate(${tx} ${ty}) scale(${scale})`);
-    const hud=mobile?'translate(25 320) scale(.84)':'translate(730 35) scale(.9)';
-    nodes['tax-panel'].setAttribute('transform',hud);nodes['payment-panel'].setAttribute('transform',hud);
-    svg.setAttribute('viewBox',mobile?'0 0 600 850':'0 0 1400 800');
+  const alpha = (id, value) => nodes[id]?.setAttribute('opacity', clamp(value));
+  const move = (id, x, y, angle = 0) => nodes[id]?.setAttribute('transform', `translate(${x} ${y}) rotate(${angle})`);
+  function worker(id, x, y, activity) {
+    move(id, x, y);
+    const stride = Math.sin(activity * Math.PI * 6) * 22;
+    nodes[`${id}-left`]?.setAttribute('transform', `rotate(${stride})`);
+    nodes[`${id}-right`]?.setAttribute('transform', `rotate(${-stride})`);
   }
-  function draw(t){
-    mount();camera(t);
-    const stage=Math.min(7,Math.floor(t));
-    if(stage!==lastStage){svg.setAttribute('aria-label',`Connected business journey: ${names[stage]}`);lastStage=stage;}
-    // One absolute timeline preserves every handover when scrubbing backwards.
-    const arrival=phase(t,.12,1.05), departure=phase(t,6.38,6.78);
-    const supplierX=-310+arrival*130, truckX=55+departure*215;
-    position('supplier-truck',supplierX,125,0,.72);
-    position('truck',truckX,125,0,.72);
-    wheels.delivery.forEach(w=>w.setAttribute('transform',`rotate(${(truckX-55)*5})`));
-    wheels.supplier.forEach(w=>w.setAttribute('transform',`rotate(${(supplierX+310)*5})`));
-    const unload=phase(t,1.12,1.9);
-    position('raw-goods',mix(-180+18,-165,unload),mix(140,7,unload),mix(45,34,unload)+Math.sin(unload*Math.PI)*25);
-    alpha('raw-goods',1-phase(t,1.85,1.95));
-    const input=phase(t,1.85,2.45), output=phase(t,2.45,3.35);
-    position('transfer-goods',mix(-165,-40,input),7,34);
-    alpha('transfer-goods',phase(t,1.85,1.95)*(1-phase(t,2.3,2.45)));
-    // Incoming shipment follows its vehicle until it is unloaded.
-    if(t<1.12)position('raw-goods',supplierX+18,140,45);
-    position('finished-goods',mix(22,115,output),mix(7,0,output),mix(34,7,output));
-    alpha('finished-goods',phase(t,2.4,2.55)*(1-phase(t,3.25,3.4)));
-    alpha('stock-goods',phase(t,3.25,3.4)*(1-phase(t,6.02,6.25)));
-    const loading=phase(t,6,6.35);
-    position('truck-load',mix(115,73,loading),mix(0,140,loading),mix(7,45,loading)+Math.sin(loading*Math.PI)*35);
-    alpha('truck-load',phase(t,6,6.12)*(1-phase(t,6.81,6.96)));
-    if(t>=6.35)position('truck-load',truckX+18,140,45);
-    const handoff=phase(t,6.8,6.98);
-    position('handover',mix(288,320,handoff),mix(140,0,handoff),mix(45,0,handoff)+Math.sin(handoff*Math.PI)*20);
-    alpha('handover',phase(t,6.8,6.9));
-    const wheel=nodes['machine-wheel'];position('machine-wheel',20,45,78,.8);
-    wheel.firstElementChild?.firstElementChild?.setAttribute('transform',`rotate(${clamp((t-2)/1.3)*1080})`);
-    // Overlap document states instead of replacing the world at chapter boundaries.
-    for(let i=0;i<8;i++)alpha(`record-${i}`,i===0?1-phase(t,.9,1.1):phase(t,i-.1,i+.1)*(i===7?1:1-phase(t,i+.9,i+1.1)));
-    const stamping=phase(t,5.38,5.65), payment=phase(t,7.42,7.72);
-    alpha('tax-panel',phase(t,4.9,5.1)*(1-phase(t,6.9,7.1)));
-    alpha('tax-sending',1-stamping);alpha('tax-stamp',stamping);
-    nodes['tax-stamp'].setAttribute('transform',`translate(0 ${-12*(1-stamping)})`);
-    nodes['tax-packet'].setAttribute('cx',String(164+phase(t,5.05,5.38)*91));
-    alpha('tax-packet',1-stamping);
-    alpha('invoice-unpaid',1-payment);alpha('invoice-paid',payment);
-    alpha('payment-panel',phase(t,6.9,7.1));
-    alpha('payment-pending',1-payment);alpha('payment-success',payment);alpha('payment-check',payment);
-    nodes['record-progress'].setAttribute('stroke-dashoffset',String(1-t/8));
-    nodes['journey-dot'].setAttribute('cx',String(85+t/8*720));
-  }
-  function animate(now){
-    const dt=previous?Math.min(64,now-previous):16;previous=now;
-    displayed+= (target-displayed)*(1-Math.exp(-dt/90));
-    if(Math.abs(target-displayed)<.0001)displayed=target;
-    draw(displayed);
-    if(displayed!==target)frame=requestAnimationFrame(animate);else{frame=0;previous=0;}
-  }
-  window.renderJourneyChapter=(stage,progress)=>{
-    if(!Number.isFinite(stage)||!Number.isFinite(progress))return;
-    target=Math.max(0,Math.min(8,Math.floor(stage)+clamp(progress)));
+  const cameraY = [220, 360, 890, 995, 1420, 1470, 1550, 1550, 1550, 1650, 2940, 2940, 2940];
+  function draw(t) {
     mount();
-    if(reduced.matches){cancelAnimationFrame(frame);frame=0;previous=0;displayed=target;draw(displayed);}
-    else if(!frame)frame=requestAnimationFrame(animate);
+    const stage = Math.min(11, Math.floor(t));
+    if (stage !== lastStage) { svg.setAttribute('aria-label', `Farm to receipt: ${names[stage]}`); lastStage = stage; }
+    const collect = phase(t, .38, .94), arriving = phase(t, 1, 1.94);
+    const inbound = roadAt(mix(40, 295, phase(t, 0, .38)) + 615 * arriving);
+    const outbound = roadAt(mix(1580, 2960, phase(t, 9.02, 9.73)));
+    move('supplier-truck', inbound.x, inbound.y, inbound.angle);
+    move('truck', outbound.x, outbound.y, outbound.angle);
+    worker('farm-worker', mix(350, 487, collect), mix(280, 240, collect), collect);
+    alpha('farm-worker-cargo', 1 - phase(t, .84, .96));
+    const unload = phase(t, 2.08, 2.83);
+    worker('receiver', mix(453, 662, unload), mix(885, 930, unload), unload);
+    alpha('receiver-cargo', 1 - phase(t, 2.72, 2.86));
+    const milling = phase(t, 3.02, 3.62);
+    move('raw-goods', 671, mix(930, 1070, milling));
+    alpha('raw-goods', phase(t, 2.72, 2.86) * (1 - phase(t, 3.5, 3.65)));
+    move('machine-wheel', 799, 947, phase(t, 3, 4) * 1440);
+    const flour = phase(t, 3.55, 4.18);
+    move('finished-goods', mix(821, 862, phase(t, 3.55, 3.78)), mix(1100, 1345, flour));
+    alpha('finished-goods', phase(t, 3.55, 3.68) * (1 - phase(t, 4.08, 4.22)));
+    const stacking = phase(t, 4.05, 4.9);
+    worker('stock-worker', mix(860, 744, stacking), mix(1358, 1480, stacking), stacking);
+    const loading = phase(t, 6.06, 6.88);
+    for (let i = 0; i < 8; i++) {
+      const placed=phase(t,4.05+i*.08,4.32+i*.08);
+      move(`stock-${i}`,mix(862,690+(i%4)*47,placed),mix(1345,1407+Math.floor(i/4)*96,placed));
+      alpha(`stock-${i}`,phase(t,4.05+i*.08,4.12+i*.08)*(1-phase(t,6.05+i*.08,6.28+i*.08)));
+    }
+    worker('loader', mix(674, 555, loading), mix(1590, 1532, loading), loading);
+    move('truck-load', mix(674, 510, loading), mix(1590, 1532, loading));
+    alpha('truck-load', phase(t, 6.02, 6.16) * (1 - phase(t, 6.85, 6.98)));
+    const handoff = phase(t, 9.75, 9.98);
+    worker('customer-worker', mix(550, 670, handoff), mix(2920, 2960, handoff), handoff);
+    move('handover', mix(550, 670, handoff), mix(2926, 2966, handoff));
+    alpha('handover', phase(t, 9.75, 9.83));
+    const call = phase(t, 5, 5.3) * (1 - phase(t, 5.75, 6));
+    nodes['order-call'].setAttribute('transform', `translate(690 1803) rotate(${Math.sin((t - 5) * 28) * call * 7} 23 37)`);
+    alpha('order-signal', call);
+    const stamp = phase(t, 8.35, 8.66), paid = phase(t, 10.35, 10.75);
+    alpha('invoice-panel', phase(t, 6.92, 7.08) * (1 - phase(t, 7.92, 8.08)));
+    alpha('invoice-unpaid', 1 - paid);
+    alpha('tax-panel', phase(t, 7.92, 8.08) * (1 - phase(t, 8.92, 9.08)));
+    alpha('tax-sending', 1 - stamp); alpha('tax-stamp', stamp); alpha('tax-packet', 1 - stamp);
+    nodes['tax-stamp'].setAttribute('transform', `translate(0 ${-18 * (1 - stamp)})`);
+    nodes['tax-packet'].setAttribute('cx', 182 + phase(t, 8.08, 8.35) * 54);
+    alpha('payment-panel', phase(t, 9.94, 10.08) * (1 - phase(t, 10.94, 11.08)));
+    alpha('payment-pending', 1 - paid); alpha('payment-success', paid); alpha('payment-check', paid);
+    alpha('receipt-panel', phase(t, 10.94, 11.15)); alpha('receipt-lines', phase(t, 11.15, 11.65));
+    const mobile = window.innerWidth <= 800;
+    let cy = mix(cameraY[stage], cameraY[stage + 1], ease(t - stage));
+    if (stage === 9) cy = mix(1650, 2940, phase(t, 9.02, 9.73));
+    // Reduced motion keeps a fixed scale and steps the camera instead of panning.
+    if (reduced.matches) cy = cameraY[Math.min(12, stage + 1)];
+    const scale = mobile ? .84 : 1.03;
+    const focusX = stage === 0 ? 400 : stage === 1 ? mix(400, 590, ease(t - 1)) : 630;
+    const tx = (mobile ? 300 : 1010) - focusX * scale;
+    const ty = (mobile ? 565 : 470) - cy * scale;
+    nodes.campus.setAttribute('transform', `translate(${tx} ${ty}) scale(${scale})`);
+    const hud = mobile ? 'translate(28 315) scale(1.04)' : 'translate(750 28) scale(1.02)';
+    for (const id of ['invoice-panel', 'tax-panel', 'payment-panel', 'receipt-panel']) nodes[id].setAttribute('transform', hud);
+    svg.setAttribute('viewBox', mobile ? '0 0 600 850' : '0 0 1400 800');
+  }
+  function animate(now) {
+    const dt = previous ? Math.min(64, now - previous) : 16; previous = now;
+    displayed += (target - displayed) * (1 - Math.exp(-dt / 95));
+    if (Math.abs(target - displayed) < .0001) displayed = target;
+    draw(displayed);
+    if (displayed !== target) frame = requestAnimationFrame(animate); else { frame = 0; previous = 0; }
+  }
+  window.renderJourneyChapter = (stage, progress) => {
+    if (!Number.isFinite(stage) || !Number.isFinite(progress)) return;
+    target = Math.max(0, Math.min(12, Math.floor(stage) + clamp(progress)));
+    if (reduced.matches) { cancelAnimationFrame(frame); frame = 0; previous = 0; displayed = target; draw(displayed); }
+    else if (!frame) frame = requestAnimationFrame(animate);
   };
-  window.addEventListener('resize',()=>{if(mounted)draw(displayed);});
-  window.addEventListener('pagehide',()=>cancelAnimationFrame(frame));
+  window.addEventListener('resize', () => { if (mounted) draw(displayed); });
+  window.addEventListener('pagehide', () => cancelAnimationFrame(frame));
 })();

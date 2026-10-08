@@ -22,7 +22,7 @@ html{scroll-behavior:smooth;scroll-padding-top:100px;background:var(--s-bg);colo
 .journey-copy{position:absolute;top:12%;left:clamp(24px,5vw,90px);width:28%;max-width:420px;pointer-events:none}
 .journey-eyebrow{display:flex;align-items:center;gap:18px;font-family:var(--s-mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--s-accent);margin-bottom:22px}
 .journey-eyebrow span{color:var(--s-muted)}
-.journey-copy h3{font-size:clamp(32px,3.5vw,58px);line-height:1.08;text-wrap:balance;animation:journey-copy-in .35s ease-out}
+.journey-copy h2{font-size:clamp(32px,3.5vw,58px);line-height:1.08;text-wrap:balance;animation:journey-copy-in .35s ease-out}
 .journey-description{font-size:clamp(14px,1.15vw,17px);line-height:1.7;color:var(--s-muted);margin-top:24px}
 .journey-receipt{display:flex;flex-direction:column;align-items:flex-start;gap:5px;margin-top:28px;padding-top:18px;border-top:1px solid var(--s-line);font-size:11px;color:var(--s-muted)}
 .journey-receipt strong{font:400 17px var(--s-mono);color:var(--s-ink)}
@@ -40,7 +40,7 @@ html{scroll-behavior:smooth;scroll-padding-top:100px;background:var(--s-bg);colo
  .journey-immersive{--journey-header:70px}
  .journey-copy{top:20px;left:24px;right:24px;width:auto;max-width:none}
  .journey-eyebrow{font-size:9px;margin-bottom:12px}
- .journey-copy h3{font-size:clamp(26px,5vw,36px);max-width:26ch}
+ .journey-copy h2{font-size:clamp(26px,5vw,36px);max-width:26ch}
  .journey-description{font-size:13px;line-height:1.55;margin-top:12px;max-width:58ch}
  .journey-receipt{flex-direction:row;align-items:center;flex-wrap:wrap;gap:6px 12px;margin-top:12px;padding-top:10px;font-size:10px}
  .journey-receipt strong{font-size:12px}.journey-receipt small{font-size:10px}
@@ -51,7 +51,7 @@ html{scroll-behavior:smooth;scroll-padding-top:100px;background:var(--s-bg);colo
  .journey-immersive .stage-controls strong{font-size:8px}.journey-immersive .stage-controls span{font-size:9px}
  .journey-immersive .illustration-note{font-size:8px;max-width:45ch}
 }
-@media(max-height:650px) and (min-width:801px){.journey-copy{top:5%}.journey-copy h3{font-size:32px}.journey-description{margin-top:14px;font-size:13px}.journey-receipt{margin-top:14px;padding-top:10px}.journey-bottom{bottom:8px}.journey-playback{margin-bottom:3px}}
+@media(max-height:650px) and (min-width:801px){.journey-copy{top:5%}.journey-copy h2{font-size:32px}.journey-description{margin-top:14px;font-size:13px}.journey-receipt{margin-top:14px;padding-top:10px}.journey-bottom{bottom:8px}.journey-playback{margin-bottom:3px}}
 
 /* Keep moving geometry behind a quiet reading area. */
 .journey-immersive .journey-animation-frame{z-index:-2}
@@ -59,3 +59,25 @@ html{scroll-behavior:smooth;scroll-padding-top:100px;background:var(--s-bg);colo
 @media(max-width:800px){.journey-immersive .journey-sticky:before{background:linear-gradient(180deg,var(--s-bg) 0%,var(--s-bg) 27%,transparent 43%)}}
 .journey-immersive .journey-bottom{left:0;right:0;bottom:0;padding-left:5%;padding-right:5%;padding-bottom:16px}
 @media(max-width:800px){.journey-immersive .journey-sticky:before{background:linear-gradient(180deg,var(--s-bg) 0%,var(--s-bg) 34%,transparent 44%)}.journey-immersive .journey-bottom{padding-left:20px;padding-right:20px;padding-bottom:12px}}
+/* Twelve handovers on a single downward road. */
+.hero-art iframe{display:block;width:100%;height:100%;border:0;pointer-events:none}
+.journey-immersive{height:calc(1060svh - var(--journey-header))}
+.journey-immersive .stage-controls{grid-template-columns:repeat(12,minmax(0,1fr));gap:8px}
+.journey-immersive .stage-controls button{flex-direction:column;align-items:flex-start;gap:5px}
+.journey-immersive .stage-controls strong{font-size:10px}
+@media(max-width:800px){
+ .journey-immersive .stage-controls{grid-template-columns:repeat(6,minmax(0,1fr));gap:0 8px}
+ .journey-immersive .stage-controls button{align-items:center;flex-direction:row;justify-content:center;gap:5px;padding:7px 0;min-height:32px}
+ .journey-immersive .stage-controls strong{font-size:8px}
+ .journey-immersive .illustration-note{font-size:7px;margin-top:5px}
+ .journey-description{font-size:12px;line-height:1.5;max-width:52ch}
+ .journey-copy h2{font-size:26px}
+ .journey-receipt{margin-top:9px;padding-top:8px}
+}
+
+/* The first viewport is the first chapter: no separate banner or spacer. */
+.journey-page-title{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.journey-opening-actions{display:flex;align-items:center;gap:24px;margin-top:28px;font-size:13px;pointer-events:auto}
+.journey-opening-actions a{padding:10px 0;border-bottom:1px solid var(--s-accent)}
+.journey-opening-actions span{color:var(--s-muted);font-size:11px}
+@media(max-width:800px){.journey-opening-actions{margin-top:12px;font-size:12px}.journey-opening-actions a{padding:6px 0}.journey-opening-actions span{font-size:10px}}

@@ -2,6 +2,8 @@ import { createFileRoute } from '@tanstack/react-router';
 import { useEffect, useRef, useState, type CSSProperties, type FormEvent } from 'react';
 import { journeySteps } from '@/components/snaperp/business-world';
 import { requestDemo } from '@/lib/api/demo.functions';
+const STAGE_COUNT=journeySteps.length;
+const TOUR_SECONDS=STAGE_COUNT*5;
 export const Route = createFileRoute('/')({ component: Home });
 function Brand(){return <a className="brand" href="/" aria-label="SnapERP home"><picture><source media="(prefers-reduced-motion: reduce)" srcSet="/assets/brand/logo-static.png"/><img src="/assets/brand/logo.gif" alt="SnapERP arithmetic tiles" width="48" height="48"/></picture><span>Snap<span className="brand-erp">ERP</span></span></a>}
 function Home(){
@@ -9,7 +11,7 @@ function Home(){
  const sectionRef=useRef<HTMLElement>(null);
  const journeyFrame=useRef<HTMLIFrameElement>(null);
  const journeyTime=useRef(0);
- const syncJourney=()=>journeyFrame.current?.contentWindow?.postMessage({type:'snaperp-journey',time:journeyTime.current},window.location.origin);
+ const syncJourney=()=>journeyFrame.current?.contentWindow?.postMessage({type:'snaperp-journey',progress:journeyTime.current},window.location.origin);
  useEffect(()=>{
   if(tour)return;
   let frame=0;
@@ -18,9 +20,9 @@ function Home(){
    const sticky=section.querySelector<HTMLElement>('.journey-sticky');if(!sticky)return;
    const header=window.innerWidth<=800?70:78;
    const travel=section.offsetHeight-sticky.offsetHeight;
-   const progress=Math.max(0,Math.min(8,(header-section.getBoundingClientRect().top)/Math.max(1,travel)*8));
-   journeyTime.current=progress*7;
-   setStage(Math.min(7,Math.floor(progress)));syncJourney();
+   const progress=Math.max(0,Math.min(STAGE_COUNT,(header-section.getBoundingClientRect().top)/Math.max(1,travel)*STAGE_COUNT));
+   journeyTime.current=progress;
+   setStage(Math.min(STAGE_COUNT-1,Math.floor(progress)));syncJourney();
   });};
   window.addEventListener('scroll',sync,{passive:true});window.addEventListener('resize',sync);sync();
   return()=>{window.removeEventListener('scroll',sync);window.removeEventListener('resize',sync);cancelAnimationFrame(frame);};
@@ -29,19 +31,19 @@ function Home(){
   if(!tour)return;
   const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   let frame=0;let start:number|null=null;
-  const initial=journeyTime.current>=55.9?0:journeyTime.current/7*5;
+  const initial=journeyTime.current>=STAGE_COUNT-.01?0:journeyTime.current*5;
   const stop=()=>setTour(false);
   window.addEventListener('wheel',stop,{passive:true});window.addEventListener('touchstart',stop,{passive:true});
   const play=(now:number)=>{
    if(start===null)start=now;
-   const elapsed=Math.min(40,initial+(now-start)/1000);
-   const chapter=Math.min(7,Math.floor(elapsed/5));
+   const elapsed=Math.min(TOUR_SECONDS,initial+(now-start)/1000);
+   const chapter=Math.min(STAGE_COUNT-1,Math.floor(elapsed/5));
    setStage(chapter);
-   journeyTime.current=reduced?Math.min(56,(chapter+1)*7-.01):elapsed/5*7;
+   journeyTime.current=reduced?Math.min(STAGE_COUNT,chapter+1-.01):elapsed/5;
    syncJourney();
    const section=sectionRef.current;const sticky=section?.querySelector<HTMLElement>('.journey-sticky');
-   if(section&&sticky){const header=window.innerWidth<=800?70:78;window.scrollTo({top:window.scrollY+section.getBoundingClientRect().top-header+(section.offsetHeight-sticky.offsetHeight)*elapsed/40,behavior:'instant'});}
-   if(elapsed<40)frame=requestAnimationFrame(play);else setTour(false);
+   if(section&&sticky){const header=window.innerWidth<=800?70:78;window.scrollTo({top:window.scrollY+section.getBoundingClientRect().top-header+(section.offsetHeight-sticky.offsetHeight)*elapsed/TOUR_SECONDS,behavior:'instant'});}
+   if(elapsed<TOUR_SECONDS)frame=requestAnimationFrame(play);else setTour(false);
   };
   frame=requestAnimationFrame(play);
   return()=>{cancelAnimationFrame(frame);window.removeEventListener('wheel',stop);window.removeEventListener('touchstart',stop);};
@@ -51,22 +53,21 @@ function Home(){
  const jump=(i:number)=>{
   setTour(false);const section=sectionRef.current;const sticky=section?.querySelector<HTMLElement>('.journey-sticky');if(!section||!sticky)return;
   const header=window.innerWidth<=800?70:78;
-  window.scrollTo({top:window.scrollY+section.getBoundingClientRect().top-header+(section.offsetHeight-sticky.offsetHeight)*(i+.04)/8,behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});
+  window.scrollTo({top:window.scrollY+section.getBoundingClientRect().top-header+(section.offsetHeight-sticky.offsetHeight)*(i+.04)/STAGE_COUNT,behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});
  };
  const selected=journeySteps[stage];
  return <><a className="skip-link" href="#main">Skip to content</a>
  <header className="site-header"><div className="header-inner"><Brand/><button className="menu-toggle" aria-expanded={menu} aria-controls="site-nav" onClick={()=>setMenu(!menu)}>{menu?'Close':'Menu'}</button><nav id="site-nav" className={menu?'site-nav nav-open':'site-nav'} aria-label="Main navigation">{[['Workflow','#workflow'],['Features','#features'],['Integrations','#integrations'],['Pricing','#pricing']].map(([label,link])=><a key={label} href={link} onClick={()=>setMenu(false)}>{label}</a>)}<a className="sign-in" href="https://erp.werevu.co.ke/">Sign in ↗</a><a className="nav-demo" href="#demo" onClick={()=>setMenu(false)}>Book a demo ↗</a></nav></div></header>
- <main id="main"><section className="hero"><div className="hero-art"><img src="/assets/factory.webp" alt="Illustration of a connected factory, warehouse and delivery operation" fetchPriority="high" width="2048" height="1360"/></div><div className="hero-content"><p className="hero-eyebrow">THE CONNECTED BUSINESS</p><h1>SnapERP.<br/>Business in motion.</h1><p className="hero-copy">Follow your goods from purchase to payment and delivery. Keep sales, stock and accounts connected.</p><div className="hero-actions"><a href="#workflow" className="hero-explore">Explore workflow ↓</a><a href="#demo" className="hero-demo">Book a demo ↗</a></div></div><div className="hero-bottom"><span>Made for businesses that move goods.</span><span className="hero-bottom-right">Purchasing / Stock / Sales / Accounts</span></div></section>
- <section className="journey-intro section-wrap" id="workflow"><h2>One journey.<br/><span>Every handover connected.</span></h2><p>Take a product through the business. Select a stage or follow the story to see how the records fit together.</p></section>
- <section className="journey journey-immersive" ref={sectionRef} aria-label="Scroll through the farm to payment journey">
+ <main id="main"><h1 className="journey-page-title">SnapERP. Business in motion.</h1>
+ <section id="workflow" className="journey journey-immersive" ref={sectionRef} aria-label="One continuous journey from the farm to the final receipt">
   {journeySteps.map((s,i)=><span key={s.name} id={`step-${i}`} className="journey-anchor" style={{'--step':i} as CSSProperties} aria-hidden="true"/>)}
   <div className="journey-sticky">
-   <iframe ref={journeyFrame} onLoad={syncJourney} src="/animation-lab.html?journey=1&layout=immersive" title="Continuous farm to payment animation" className="journey-animation-frame" tabIndex={-1}/>
+   <iframe ref={journeyFrame} onLoad={syncJourney} src="/journey.html?continuous=1" title="Winding road from the farm to the final receipt" className="journey-animation-frame" tabIndex={-1}/>
    <div className="journey-copy" aria-live="polite" aria-atomic="true">
-    <p className="journey-eyebrow"><span>{String(stage+1).padStart(2,'0')} / 08</span> {selected.name}</p>
-    <h3 key={selected.name}>{selected.title}</h3>
-    <p className="journey-description">{selected.body}</p>
-    <div className="journey-receipt"><span>{selected.record}</span><strong>{selected.ref}</strong><small>{selected.detail}</small></div>
+    <p className="journey-eyebrow"><span>{String(stage+1).padStart(2,'0')} / {STAGE_COUNT}</span> {selected.name}</p>
+    <h2 key={selected.name}>{stage===0?<>SnapERP.<br/>Business in motion.</>:selected.title}</h2>
+    <p className="journey-description">{stage===0?"From the first maize sack to the final receipt. Scroll to drive the truck through a connected business.":selected.body}</p>
+    {stage===0?<div className="journey-opening-actions"><a href="#demo">Book a demo ↗</a><span>Scroll to begin ↓</span></div>:<div className="journey-receipt"><span>{selected.record}</span><strong>{selected.ref}</strong><small>{selected.detail}</small></div>}
    </div>
    <div className="journey-bottom">
     <div className="journey-playback"><span>Scroll to follow the journey ↓</span><button className="tour-toggle" onClick={()=>setTour(!tour)} aria-pressed={tour}>{tour?'Pause tour Ⅱ':'Play tour ▷'}</button></div>

@@ -1,14 +1,138 @@
 import { useEffect, useRef, type CSSProperties } from 'react';
 
 export const journeySteps = [
- {name:'Purchase',title:'Start at the farm.',body:'Order maize from the farm. The purchase order connects the grower, harvested sacks and collection before the truck heads to the mill.',record:'Purchase order',ref:'PO-1048',event:'Farm collection arranged',detail:'Maize from the farm',module:'Purchasing',icon:0},
- {name:'Receive',title:'Every sack accounted for.',body:'Unload the maize at the receiving bay. Check the delivery against the purchase order and record the raw materials received.',record:'Goods receipt',ref:'GRN-1048',event:'Maize received at the mill',detail:'Raw maize received',module:'Inventory',icon:1},
- {name:'Process',title:'From maize to flour.',body:'Follow the maize into the milling line. A production work order connects the raw grain to the flour produced.',record:'Work order',ref:'WO-0241',event:'Milling workflow illustrated',detail:'Maize flour produced',module:'Optional manufacturing',icon:2},
- {name:'Stock',title:'Packed and ready.',body:'Pack the flour and move it into the warehouse. Finished-goods stock is ready for the next customer order.',record:'Stock movement',ref:'ST-0241',event:'Packaged flour enters stock',detail:'24 flour packages',module:'Inventory',icon:1},
- {name:'Order',title:'Reserve the customer’s goods.',body:'Record a credit sale and reserve the flour packages. The customer will receive the goods before making payment.',record:'Sales order',ref:'SO-0286',event:'Credit order recorded',detail:'24 packages reserved',module:'Sales',icon:3},
- {name:'Invoice',title:'Invoice. Submit. Stamp.',body:'Create the invoice and follow the illustrative KRA eTIMS submission and validation. The stamped invoice remains unpaid while the order moves to delivery.',record:'Customer invoice',ref:'INV-0286',event:'eTIMS validation illustrated',detail:'Stamped · unpaid',module:'Sales + configured eTIMS',icon:3},
- {name:'Deliver',title:'Load and complete the handover.',body:'Pick the reserved flour, load the delivery truck and deliver it to the customer. Delivery is confirmed; the invoice is still unpaid.',record:'Dispatch document',ref:'DSP-0286',event:'Delivery confirmed on credit',detail:'Delivered · unpaid',module:'Configured delivery workflow',icon:5},
- {name:'Pay',title:'Payment closes the journey.',body:'After delivery, the customer pays through M-Pesa. Match the illustrative payment to the invoice, issue a receipt and update the balance to paid.',record:'Customer receipt',ref:'RCT-0286',event:'M-Pesa payment matching illustrated',detail:'Receipt matched · paid',module:'Banking + configured M-Pesa',icon:4},
+  {
+    "name": "Farm",
+    "title": "Every journey starts with a grower.",
+    "body": "Maize is harvested and gathered into sacks. Workers prepare the collection while the purchase order connects the grower to the mill.",
+    "record": "Purchase order",
+    "ref": "PO-1048",
+    "event": "Farm collection arranged",
+    "detail": "Maize ready for collection",
+    "module": "Purchasing",
+    "icon": 0
+  },
+  {
+    "name": "Transport",
+    "title": "Follow the road to the mill.",
+    "body": "The collection truck leaves the farm and follows the bends to the factory receiving bay. The incoming consignment stays linked to its purchase order.",
+    "record": "Incoming shipment",
+    "ref": "PO-1048",
+    "event": "Collection in transit",
+    "detail": "Farm → factory",
+    "module": "Purchasing",
+    "icon": 5
+  },
+  {
+    "name": "Receive",
+    "title": "People handle every handover.",
+    "body": "The truck stops at the factory. Workers offload the sacks, check the delivery and bring the maize into the receiving area.",
+    "record": "Goods receipt",
+    "ref": "GRN-1048",
+    "event": "Maize received at the mill",
+    "detail": "Checked and received",
+    "module": "Inventory",
+    "icon": 1
+  },
+  {
+    "name": "Process",
+    "title": "Watch the factory get to work.",
+    "body": "Inside the mill, maize moves along the conveyor into processing. The production work order connects the raw grain to the finished flour.",
+    "record": "Work order",
+    "ref": "WO-0241",
+    "event": "Milling and packing illustrated",
+    "detail": "Maize → packaged flour",
+    "module": "Optional manufacturing",
+    "icon": 2
+  },
+  {
+    "name": "Stock",
+    "title": "A place for every package.",
+    "body": "Packed flour moves into the warehouse. Workers place the finished goods on storage racks, ready for the next order.",
+    "record": "Stock movement",
+    "ref": "ST-0241",
+    "event": "Flour placed into storage",
+    "detail": "24 packages available",
+    "module": "Inventory",
+    "icon": 1
+  },
+  {
+    "name": "Order",
+    "title": "The next journey starts with a call.",
+    "body": "A customer calls the sales desk. The order is recorded and the required flour is reserved for a credit sale.",
+    "record": "Sales order",
+    "ref": "SO-0286",
+    "event": "Customer order confirmed",
+    "detail": "24 packages reserved",
+    "module": "Sales",
+    "icon": 3
+  },
+  {
+    "name": "Load",
+    "title": "Pick it. Load it. Check it.",
+    "body": "The warehouse team picks the reserved flour and carries it to the delivery truck. The loaded goods are checked against the customer order.",
+    "record": "Picking list",
+    "ref": "PICK-0286",
+    "event": "Order picked and loaded",
+    "detail": "Ready for dispatch",
+    "module": "Inventory + dispatch",
+    "icon": 1
+  },
+  {
+    "name": "Invoice",
+    "title": "Give the shipment its invoice.",
+    "body": "Create the invoice for the loaded order. The customer, flour quantities and amount are recorded together. Payment will follow delivery.",
+    "record": "Customer invoice",
+    "ref": "INV-0286",
+    "event": "Invoice created",
+    "detail": "KSh 48,000 · unpaid",
+    "module": "Sales",
+    "icon": 3
+  },
+  {
+    "name": "eTIMS",
+    "title": "Submit. Validate. Stamp.",
+    "body": "Follow the illustrative KRA eTIMS submission. Validation returns to the invoice before the loaded vehicle leaves for delivery.",
+    "record": "Invoice validation",
+    "ref": "INV-0286",
+    "event": "eTIMS stamping illustrated",
+    "detail": "Validated · unpaid",
+    "module": "Configured eTIMS",
+    "icon": 3
+  },
+  {
+    "name": "Deliver",
+    "title": "Take the goods all the way.",
+    "body": "The delivery truck leaves the factory, follows the road downhill and turns with each bend. At the customer, workers unload the flour and confirm delivery.",
+    "record": "Delivery note",
+    "ref": "DSP-0286",
+    "event": "Customer handover confirmed",
+    "detail": "Delivered on credit",
+    "module": "Delivery",
+    "icon": 5
+  },
+  {
+    "name": "Pay",
+    "title": "Delivery first. Payment next.",
+    "body": "The customer pays through M-Pesa after receiving the goods. The illustrative payment is matched to the outstanding invoice.",
+    "record": "Payment matching",
+    "ref": "INV-0286",
+    "event": "M-Pesa payment received",
+    "detail": "KSh 48,000 matched",
+    "module": "Configured M-Pesa",
+    "icon": 4
+  },
+  {
+    "name": "Receipt",
+    "title": "Close the journey with a receipt.",
+    "body": "Issue the receipt, mark the invoice paid and bring the customer balance to zero. Every handover is connected, from the farm to the final record.",
+    "record": "Customer receipt",
+    "ref": "RCT-0286",
+    "event": "Receipt issued",
+    "detail": "Paid · balance KSh 0",
+    "module": "Banking + accounting",
+    "icon": 4
+  }
 ] as const;
 
 function Block({x,y,w=88,d=48,h=48,accent=false}:{x:number;y:number;w?:number;d?:number;h?:number;accent?:boolean}) {
