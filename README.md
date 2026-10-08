@@ -43,3 +43,23 @@ Before launching under a new domain, update the canonical URL and Open Graph URL
 ## Import
 
 Source exported from the existing SnapERP Higgsfield website. The original application files and assets are preserved. The existing Higgsfield site remains separate from this GitHub repository.
+
+## Push this ZIP locally
+
+The GitHub repository already contains the setup README. Preserve that initial commit by cloning it first, then copying the extracted project files into the clone (including dotfiles). Do not copy any `.git` directory.
+
+```sh
+git clone git@github.com:bkyalo/ERP-Website.git
+# Copy the extracted ZIP contents into ERP-Website.
+cd ERP-Website
+git add .
+git commit -m "Import complete SnapERP website"
+git push origin main
+```
+
+The ZIP includes source and resource files. Install Node/Bun dependencies using the lockfile; generated `node_modules` and build output are intentionally excluded.
+
+
+## Portable ZIP resources
+
+This ZIP includes local launch images (`app/public/assets/launch-og.png`, `launch-cover.png`) and downloaded web fonts. The main site font import uses `/assets/fonts/fonts.css`, so the page does not need Google Fonts at runtime. Launch metadata retains the original asset URLs; update them for your new hosting domain or use the bundled image copies. Dependencies are installed with Bun from the included lockfile.
