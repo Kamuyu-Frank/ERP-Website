@@ -24,9 +24,12 @@ describe("scroll-scrub website landing contract", () => {
     const landingRoute = readFileSync(new URL("../src/routes/index.tsx", import.meta.url), "utf8");
     const appRoute = readFileSync(new URL("../src/routes/app.tsx", import.meta.url), "utf8");
 
-    // scroll-scrub's home IS the site: "/" renders the journey instead of the
-    // stock LandingPage. Everything else about the split is unchanged.
-    expect(landingRoute).toContain("ScrollScrub");
+    // The public site now uses the persistent SVG journey, with origin-checked messages.
+    expect(landingRoute).toContain('src="/journey.html?continuous=1"');
+    expect(landingRoute).not.toContain('<LandingPage');
+    const journey = readFileSync(new URL('../public/journey.html', import.meta.url), 'utf8');
+    expect(journey).toContain('event.origin!==location.origin');
+    expect(journey).toContain('event.source!==parent');
     expect(appRoute).toContain('createFileRoute("/app")');
     expect(appRoute).toContain("previewMode");
   });

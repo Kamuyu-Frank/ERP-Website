@@ -1,5 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { useEffect, useRef, type CSSProperties } from 'react';
+import { useScrollShowcase } from '@/components/snaperp/use-scroll-showcase';
 import { MarketingPage } from '@/components/snaperp/site-chrome';
 
 export const Route = createFileRoute('/features')({
@@ -27,7 +28,7 @@ const planned = [
  {name:'Planning & insights', icon:'↗', copy:'Explore demand trends, replenishment suggestions and business planning.', flow:['Trends','Forecast','Plan']},
 ];
 function Page(){
- const [selected,setSelected]=useState(0),[replay,setReplay]=useState(0);
+ const {selected,track,jumpTo:jumpToModule}=useScrollShowcase(modules.length);
  const roadmap=useRef<HTMLElement>(null);
  useEffect(()=>{
   const cards=roadmap.current?.querySelectorAll<HTMLElement>('.planned-feature');
@@ -43,19 +44,27 @@ function Page(){
    <p>From the first purchase to the final receipt, give each team the records they need—and connect the work between them.</p>
    <div className="feature-intro-links"><a href="#explore-modules">Explore the modules ↓</a><a href="#planned-features">See what’s next ↗</a></div>
   </section>
-  <section className="feature-explorer section-wrap" id="explore-modules" aria-labelledby="modules-heading">
-   <div className="feature-section-heading"><div><p className="feature-kicker">EXPLORE SNAP ERP</p><h2 id="modules-heading">See how the work connects.</h2></div><p>Select a module to follow an illustrative workflow. Module scope and availability are confirmed during your demo.</p></div>
-   <div className="feature-workspace">
-    <div className="module-picker" aria-label="Explore a business module">{modules.map((module,i)=><button key={module.name} aria-pressed={selected===i} aria-controls="module-preview" onClick={()=>setSelected(i)}><img src={`/assets/icon-${module.icon}.png`} alt="" width="36" height="36"/><span>{module.name}{module.optional&&<small>Optional module</small>}</span><span className="module-arrow" aria-hidden="true">↗</span></button>)}</div>
-    <div className="module-preview" id="module-preview" aria-live="polite" aria-atomic="true">
-     <div className="module-preview-copy"><p className="feature-kicker">{current.name} / WORKFLOW PREVIEW</p><h3>{current.title}</h3><p>{current.copy}</p></div>
-     <div className="module-animation" key={`${selected}-${replay}`}>
-      <div className="module-flow" aria-label="Workflow steps">{current.steps.map((step,i)=><div className="module-flow-step" key={step} style={{'--item':i} as CSSProperties}><span className="module-step-marker" aria-hidden="true">✓</span><span>{step}</span></div>)}</div>
-      <div className="module-record"><span>CONNECTED RECORD</span><strong>{current.record}</strong><div className="module-progress" aria-hidden="true"><span/></div><p>{current.metric}</p></div>
+  <section className="feature-scrolltrack" id="explore-modules" ref={track} style={{'--module-count':modules.length} as CSSProperties} aria-label="Scroll through the SnapERP modules">
+   <div className="feature-pinned-stage">
+    <div className="feature-stage-inner section-wrap">
+     <div className="feature-stage-top"><p className="feature-kicker">THE WORKSPACE, IN MOTION</p><a href="#planned-features">Skip to what’s next ↗</a></div>
+     <div className="feature-stage-layout">
+      <div className="feature-stage-copy" aria-live="polite" aria-atomic="true">
+       <p className="feature-module-label">{current.name}{current.optional&&<span>Optional module</span>}</p>
+       <h2 key={current.name}>{current.title}</h2><p>{current.copy}</p>
+       <a href="/#demo">Explore {current.name.toLowerCase()} in your demo ↗</a>
+      </div>
+      <div className="feature-stage-visual" id="module-preview" aria-label={`${current.name} illustrative workflow`}>
+       <div className="feature-visual-heading"><span>SnapERP / {current.name}</span><span>Illustrative workflow</span></div>
+       <div className="feature-module-emblem" key={current.name}><div className="feature-orbit" aria-hidden="true"/><img src={`/assets/icon-${current.icon}.png`} alt="" width="100" height="100"/><strong>{current.name}</strong></div>
+       <div className="module-flow" aria-label="Workflow steps">{current.steps.map((step,i)=><div className="module-flow-step" key={step} style={{'--item':i} as CSSProperties}><span className="module-step-marker" aria-hidden="true">✓</span><span>{step}</span></div>)}</div>
+       <div className="module-record"><span>CONNECTED RECORD</span><strong>{current.record}</strong><div className="module-progress" aria-hidden="true"><span/></div><p>{current.metric}</p></div>
+      </div>
      </div>
-     <div className="module-preview-footer"><span>Illustrative example</span><button onClick={()=>setReplay(value=>value+1)} aria-label={`Replay ${current.name} workflow animation`}>Replay animation ↻</button></div>
+     <div className="feature-stage-bottom"><p><span aria-hidden="true">↓</span> Keep scrolling. The next module follows.</p><label>Jump to a module<select value={selected} onChange={event=>jumpToModule(Number(event.target.value))}>{modules.map((module,i)=><option key={module.name} value={i}>{module.name}</option>)}</select></label></div>
     </div>
    </div>
+   <div className="feature-static-list section-wrap">{modules.map(module=><article key={module.name}><img src={`/assets/icon-${module.icon}.png`} alt="" width="48" height="48"/><p className="feature-kicker">{module.name}{module.optional?' · Optional module':''}</p><h2>{module.title}</h2><p>{module.copy}</p><ol>{module.steps.map(step=><li key={step}>{step}</li>)}</ol><small>{module.metric}</small></article>)}</div>
   </section>
   <section className="feature-roadmap section-wrap" id="planned-features" ref={roadmap} aria-labelledby="roadmap-heading">
    <div className="feature-section-heading"><div><p className="feature-kicker">LOOKING AHEAD</p><h2 id="roadmap-heading">More room to grow.</h2></div><p>Features we plan to build next. These concepts are not available yet; scope and release timing are still to be decided.</p></div>

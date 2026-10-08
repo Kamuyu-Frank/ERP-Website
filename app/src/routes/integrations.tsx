@@ -1,5 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { useState, type CSSProperties } from 'react';
+import { type CSSProperties } from 'react';
+import { useScrollShowcase } from '@/components/snaperp/use-scroll-showcase';
 import { MarketingPage } from '@/components/snaperp/site-chrome';
 
 export const Route = createFileRoute('/integrations')({
@@ -11,32 +12,35 @@ const connections = [
  {name:'KRA eTIMS',kind:'TAX INVOICING',logo:'/assets/integrations/etims.png',title:'Keep the invoice and its status together.',copy:'Follow an illustrative invoice submission and validation response, with the result linked back to the original sales record.',steps:['Sales invoice','eTIMS submission','Validation recorded'],status:'Validation recorded',reference:'INV-0286',result:'INV-0286',amount:'Validated',label:'Illustrative response',benefits:[['Submit','Explore invoice submission for your configured eTIMS setup.'],['Track','Follow the validation response alongside the original invoice.'],['Connect','Discuss credit-note workflows and document traceability.']],setup:'Confirm live onboarding, credentials, supported documents and successful validation for your business before use.'},
 ];
 function Page(){
- const [selected,setSelected]=useState(0),[replay,setReplay]=useState(0);
+ const {selected,track,jumpTo}=useScrollShowcase(connections.length);
  const current=connections[selected];
  return <MarketingPage active="/integrations">
   <section className="connections-hero section-wrap">
    <div><p className="feature-kicker">PAYMENTS. INVOICES. CONNECTED.</p><h1>Bring the outside<br/>into your workflow.</h1><p>Connect the services your business uses to the records your team relies on. Less searching between systems. A clearer story behind each transaction.</p><a className="connection-explore" href="#connection-preview">Explore the connections ↓</a></div>
    <div className="connection-map" aria-label="SnapERP connects invoices to KRA eTIMS and payments to M-Pesa"><div className="connection-map-center"><img src="/assets/brand/logo-static.png" alt="" width="48" height="48"/><strong>SnapERP</strong><span>Your business records</span></div><div className="connection-map-branches"><div className="connection-map-node"><img src="/assets/integrations/mpesa.webp" alt="M-Pesa" width="150" height="84"/><span>Payments & receipts</span></div><div className="connection-map-node"><img src="/assets/integrations/etims.png" alt="KRA eTIMS" width="92" height="92"/><span>Invoices & validation</span></div></div><p>Connections configured for your business</p></div>
   </section>
-  <section className="connection-explorer section-wrap" id="connection-preview" aria-labelledby="connections-heading">
-   <div className="feature-section-heading"><div><p className="feature-kicker">FOLLOW THE HANDOFF</p><h2 id="connections-heading">One transaction.<br/>Connected records.</h2></div><p>Choose a connection to see how the records fit together. These previews use illustrative data.</p></div>
-   <div className="connection-selector" aria-label="Choose an integration">{connections.map((connection,i)=><button key={connection.name} aria-pressed={selected===i} aria-controls="connection-detail" onClick={()=>setSelected(i)}><span>{connection.name}</span><small>{connection.kind}</small><span aria-hidden="true">↗</span></button>)}</div>
-   <div className="connection-detail" id="connection-detail" aria-live="polite" aria-atomic="true">
-    <div className="connection-story"><p className="feature-kicker">{current.kind}</p><h3>{current.title}</h3><p>{current.copy}</p><dl>{current.benefits.map(([title,copy])=><div key={title}><dt>{title}</dt><dd>{copy}</dd></div>)}</dl><div className="connection-setup"><strong>Configured for your business</strong><p>{current.setup}</p></div></div>
-    <div className="connection-demo">
-     <div className="connection-demo-top"><span>WORKFLOW PREVIEW</span><span>Example data</span></div>
-     <div className="connection-demo-motion" key={`${selected}-${replay}`}>
-      <div className="connection-source"><span>SnapERP / Sales invoice</span><strong>{current.reference}</strong><p>Customer order · KSh 48,000</p></div>
-      <div className="connection-transfer" aria-hidden="true"><span/></div>
-      <div className="connection-provider"><div className={`connection-logo ${selected===1?'connection-logo-etims':''}`}><img src={current.logo} alt={current.name} width="160" height="100"/></div><span>{current.steps[1]}</span></div>
-      <div className="connection-transfer connection-transfer-return" aria-hidden="true"><span/></div>
-      <div className="connection-result"><span className="connection-result-status">✓ {current.status}</span><strong>{current.amount}</strong><span>{current.label}</span><div><span>{current.result}</span><span>Linked to {current.reference}</span></div></div>
-      <ol className="connection-step-list">{current.steps.map((step,i)=><li key={step} style={{'--item':i} as CSSProperties}>{step}</li>)}</ol>
+  <section className="feature-scrolltrack connection-scrolltrack" id="connection-preview" ref={track} style={{'--module-count':connections.length} as CSSProperties} aria-label="Scroll through M-Pesa and KRA eTIMS workflows">
+   <div className="feature-pinned-stage"><div className="feature-stage-inner section-wrap">
+    <div className="feature-stage-top"><p className="feature-kicker">FOLLOW THE HANDOFF</p><a href="#connection-requirements">Skip to setup details ↗</a></div>
+    <div className="feature-stage-layout">
+     <div className="feature-stage-copy" aria-live="polite" aria-atomic="true"><p className="feature-module-label">{current.name}<span>{current.kind}</span></p><h2 key={current.name}>{current.title}</h2><p>{current.copy}</p><div className="connection-benefit-tags">{current.benefits.map(([title])=><span key={title}>{title}</span>)}</div><a href="/#demo">Discuss your {current.name} setup ↗</a></div>
+     <div className="connection-demo connection-scroll-demo" id="connection-detail" aria-label={`${current.name} illustrative workflow`}>
+      <div className="connection-demo-top"><span>{current.name} / WORKFLOW PREVIEW</span><span>Example data</span></div>
+      <div className="connection-demo-motion">
+       <div className="connection-source"><span>SnapERP / Sales invoice</span><strong>{current.reference}</strong><p>Customer order · KSh 48,000</p></div>
+       <div className="connection-transfer" aria-hidden="true"><span/></div>
+       <div className="connection-provider"><div className={`connection-logo ${selected===1?'connection-logo-etims':''}`}><img src={current.logo} alt={current.name} width="160" height="100"/></div><span>{current.steps[1]}</span></div>
+       <div className="connection-transfer connection-transfer-return" aria-hidden="true"><span/></div>
+       <div className="connection-result"><span className="connection-result-status">✓ {current.status}</span><strong>{current.amount}</strong><span>{current.label}</span><div><span>{current.result}</span><span>Linked to {current.reference}</span></div></div>
+       <ol className="connection-step-list">{current.steps.map((step,i)=><li key={step} style={{'--item':i} as CSSProperties}>{step}</li>)}</ol>
+      </div><p className="connection-preview-note">Illustrative preview · No live transaction is sent</p>
      </div>
-     <div className="module-preview-footer"><span>No live transaction is sent</span><button onClick={()=>setReplay(value=>value+1)} aria-label={`Replay ${current.name} preview`}>Replay preview ↻</button></div>
     </div>
-   </div>
+    <div className="feature-stage-bottom"><p><span aria-hidden="true">↓</span> Scroll to follow the connection.</p><label>Jump to a connection<select value={selected} onChange={event=>jumpTo(Number(event.target.value))}>{connections.map((connection,i)=><option key={connection.name} value={i}>{connection.name}</option>)}</select></label></div>
+   </div></div>
+   <div className="feature-static-list section-wrap">{connections.map(connection=><article key={connection.name}><div className={`connection-logo ${connection.name==='KRA eTIMS'?'connection-logo-etims':''}`}><img src={connection.logo} alt={connection.name} width="160" height="100"/></div><p className="feature-kicker">{connection.name}</p><h2>{connection.title}</h2><p>{connection.copy}</p><ol>{connection.steps.map(step=><li key={step}>{step}</li>)}</ol><small>Illustrative workflow · No live transaction is sent</small></article>)}</div>
   </section>
+  <section className="connection-requirements section-wrap" id="connection-requirements" aria-labelledby="requirements-heading"><div className="feature-section-heading"><div><p className="feature-kicker">CONFIGURED FOR YOUR BUSINESS</p><h2 id="requirements-heading">The details behind the handoff.</h2></div><p>Confirm the supported workflow and onboarding requirements for each connection during your demo.</p></div><div className="connection-requirements-grid">{connections.map(connection=><article key={connection.name}><h3>{connection.name}</h3><dl>{connection.benefits.map(([title,copy])=><div key={title}><dt>{title}</dt><dd>{copy}</dd></div>)}</dl><p>{connection.setup}</p></article>)}</div></section>
   <section className="connection-onboarding section-wrap" aria-labelledby="setup-heading"><div className="feature-section-heading"><div><p className="feature-kicker">FROM DEMO TO DAILY WORK</p><h2 id="setup-heading">Start with the right setup.</h2></div><p>We’ll discuss your workflow first, then confirm what can be connected and how it should work for your team.</p></div><div className="connection-setup-steps">{[['Discuss your workflow','Show us how you collect payments, issue invoices and manage the related records.'],['Confirm the connection','Review supported modes, onboarding requirements, module scope and pricing.'],['Verify the handoff','Confirm configuration and a successful end-to-end workflow before relying on it in daily operations.']].map(([title,copy],i)=><article key={title}><span>{String(i+1).padStart(2,'0')}</span><h3>{title}</h3><p>{copy}</p></article>)}</div></section>
   <section className="connection-future section-wrap" aria-labelledby="future-heading"><div className="feature-section-heading"><div><p className="feature-kicker">FUTURE CONNECTIONS</p><h2 id="future-heading">What should connect next?</h2></div><p>Ideas for future development. These connections are not available yet; tell us which would help your business most.</p></div><div className="connection-future-grid">{[['Bank feeds','Bring bank activity closer to matching and reconciliation.'],['Online stores','Connect online orders to stock and fulfilment.'],['Messaging','Keep customers informed about orders and deliveries.'],['APIs & webhooks','Connect specialist tools to your business workflows.']].map(([name,copy])=><article key={name}><span className="planned-badge">Planned</span><h3>{name}</h3><p>{copy}</p></article>)}</div></section>
   <section className="connection-faq section-wrap" aria-labelledby="questions-heading"><h2 id="questions-heading">Before you connect.</h2>{[['Are these previews live?','No. These animations show illustrative records. They do not collect money or submit invoices to KRA.'],['Is every integration included in every setup?','Availability depends on the configured modules, supported collection modes, onboarding and agreed plan. We’ll confirm the scope during your demo.'],['Can we connect another service?','Tell us which service you use and the workflow you want to connect. We can discuss feasibility and scope; the future connections above are planned concepts.']].map(([question,answer])=><details key={question}><summary>{question}<span aria-hidden="true">+</span></summary><p>{answer}</p></details>)}</section>

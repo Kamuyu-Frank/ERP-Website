@@ -1,30 +1,46 @@
-name: Template CI
+name: SnapERP CI
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: snaperp-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   validate:
-    runs-on: arc-runners-frontend
-    name: Validate template
-    # The app project lives in app/ (ci/ holds the deploy config, AGENTS.md +
-    # skills/ stay at root). Every build step runs there.
+    name: Validate and build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
     defaults:
       run:
         working-directory: app
     steps:
-      - uses: actions/checkout@v6
+      - name: Check out source
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
 
-      - uses: oven-sh/setup-bun@v2
+      - name: Set up Node
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '22'
+          package-manager-cache: false
 
-      - name: Install dependencies
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+        with:
+          bun-version: '1.4.2'
+
+      - name: Install locked dependencies
         run: bun install --frozen-lockfile
-
-      - name: Typecheck
-        run: bun run typecheck
 
       - name: Lint
         run: bun run lint
@@ -32,10 +48,25 @@ jobs:
       - name: Test
         run: bun run test
 
-      # Deploys always ship the design inspector: apps-ci / apps-ci-dev export
-      # HF_DESIGN_INSPECTOR=1 before `bun run build`. Validate that exact
-      # artifact here — one build, not a separate plain + design pair.
-      - name: Build (design inspector on, as deploys ship it)
-        env:
-          HF_DESIGN_INSPECTOR: "1"
+      - name: Typecheck and build production bundle
+        # build includes the UI contract, route generation and TypeScript checks.
         run: bun run build
+
+      - name: Verify Worker and assets
+        run: |
+          test -s dist/server/server.js
+          test -s dist/client/journey.html
+          test -s dist/client/journey-scenes.js
+          test -s dist/client/assets/fonts/quicksand-variable.ttf
+          git diff --exit-code -- src/routeTree.gen.ts
+
+      - name: Save deployable build
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: snaperp-build-${{ github.sha }}
+          path: |
+            app/dist/
+            app/migrations/
+            app/app.manifest.json
+          if-no-files-found: error
+          retention-days: 7

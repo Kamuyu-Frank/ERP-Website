@@ -44,6 +44,12 @@ export default tseslint.config(
     },
   },
   {
+    // Inherited widgets synchronise initial state with an external carousel/media query.
+    // Keep the compiler's newer heuristic scoped to these existing adapters.
+    files: ["src/components/ui/carousel.tsx", "src/hooks/use-mobile.ts"],
+    rules: { "react-hooks/set-state-in-effect": "off" },
+  },
+  {
     // The justified-gallery engine deliberately reads refs during its
     // render-time measure pass (bespoke out-of-React layout/windowing engine).
     // Exempt from the compiler-strict refs rule — do NOT imitate this pattern

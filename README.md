@@ -63,3 +63,24 @@ The ZIP includes source and resource files. Install Node/Bun dependencies using 
 ## Portable ZIP resources
 
 This ZIP includes local launch images (`app/public/assets/launch-og.png`, `launch-cover.png`) and downloaded web fonts. The main site font import uses `/assets/fonts/fonts.css`, so the page does not need Google Fonts at runtime. Launch metadata retains the original asset URLs; update them for your new hosting domain or use the bundled image copies. Dependencies are installed with Bun from the included lockfile.
+
+## GitHub Actions on main
+
+`.github/workflows/ci.yml` runs on pushes to `main`, pull requests targeting
+`main`, and manual dispatch. It uses GitHub-hosted Ubuntu runners, Node 22 and
+Bun 1.4.2 with the committed lockfile. The pipeline runs lint, all tests, the UI
+contract, TypeScript checks and the production build. It also checks that the
+Worker, journey assets and local Quicksand font exist and that generated routes
+match the committed route tree.
+
+Successful runs publish `snaperp-build-<commit SHA>` as a seven-day build artifact
+containing the Worker, static assets, migrations and application manifest. The
+production bundle does not enable the development design inspector. Actions are
+pinned to commit SHAs and the workflow has read-only repository permissions.
+
+**Hosting deployment is not enabled yet.** Choose the deployment destination
+before adding a publish job. The current `wrangler.jsonc` contains development
+placeholders and must not be used to deploy to production. Independent Cloudflare
+hosting needs an account, a Worker target, a D1 database and a deployment token
+stored as a GitHub secret; Higgsfield hosting needs its supported deployment path.
+CI and artifact creation require no hosting credentials.

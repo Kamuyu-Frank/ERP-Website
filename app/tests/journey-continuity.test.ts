@@ -3,11 +3,12 @@ import { readFileSync } from 'node:fs';
 import { runInNewContext } from 'node:vm';
 
 const source = readFileSync(new URL('../public/journey-scenes.js', import.meta.url), 'utf8');
+interface SceneNode { attributes:Record<string,string>;setAttribute(key:string,value:unknown):void;removeAttribute(key:string):void;querySelector(selector:string):SceneNode;querySelectorAll():SceneNode[];readonly firstElementChild:SceneNode;innerHTML:string; }
 function player(reduced = true, width = 1400) {
-  const nodes = new Map<string, any>();
+  const nodes = new Map<string, SceneNode>();
   const callbacks = new Map<number, (time: number) => void>();
   let sequence = 0, mounts = 0, now = 0;
-  function node(id: string): any {
+  function node(id: string): SceneNode {
     if (!nodes.has(id)) nodes.set(id, {
       attributes: {} as Record<string, string>,
       setAttribute(key: string, value: unknown) { this.attributes[key] = String(value); },
@@ -17,9 +18,9 @@ function player(reduced = true, width = 1400) {
       get firstElementChild() { return node(`${id}-child`); },
       set innerHTML(value: string) { expect(value).not.toContain('NaN'); mounts++; },
     });
-    return nodes.get(id);
+    return nodes.get(id)!;
   }
-  const window: any = { innerWidth: width, matchMedia: () => ({ matches: reduced }), addEventListener() {} };
+  const window = { renderJourneyChapter: (_stage:number,_progress:number) => {}, innerWidth: width, matchMedia: () => ({ matches: reduced }), addEventListener() {} };
   runInNewContext(source, {
     document: { getElementById: () => node('svg') }, window,
     requestAnimationFrame(callback: (time: number) => void) { callbacks.set(++sequence, callback); return sequence; },
