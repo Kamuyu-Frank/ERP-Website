@@ -16,7 +16,7 @@
     const slope = (xb - xa) * 6 * p * (1 - p) / (yb - ya);
     return { x: mix(xa, xb, ease(p)), y, angle: -Math.atan(slope) * 180 / Math.PI };
   }
-  const text = (x, y, value, size = 13, fill = '#bdd0d8', extra = '') => `<text x="${x}" y="${y}" fill="${fill}" font-size="${size}" font-family="Quicksand,sans-serif" ${extra}>${value}</text>`;
+  const text = (x, y, value, size = 13, fill = 'var(--world-label)', extra = '') => `<text x="${x}" y="${y}" fill="${fill}" font-size="${size}" font-family="Quicksand,sans-serif" ${extra}>${value}</text>`;
   const group = (id, markup, extra = '') => `<g id="${id}" ${extra}>${markup}</g>`;
   const sack = '<path d="M-8-19Q0-16 8-19L7-13Q19 12 10 17Q0 22-10 17Q-19 12-7-13Z" fill="#d8bd86" stroke="#f1dcad"/><path d="M-7-13H7M-8 5Q0 11 8 5" fill="none" stroke="#947741" stroke-width="2"/>';
   const pack = '<path d="M-14-13L8-17L17-10V15L-5 19L-14 12Z" fill="#e3e6dc" stroke="#8ba1a6"/><path d="M-14-13L-5-6L17-10M-5-6V19" fill="none" stroke="#fff"/><path d="M-5 2L17-2V7L-5 11Z" fill="#208b9d"/><text x="-1" y="6" font-family="Quicksand,sans-serif" font-size="5" fill="white">GOODS</text>';
@@ -81,22 +81,22 @@
     for (let i = 0; i < 30; i++) { const y = 100 + i * 108; trees += tree(i % 2 ? 40 : 970, y, .7 + (i % 3) * .15); }
     const invoice = `<rect width="520" height="185" rx="10" fill="#f0f4f4"/>${text(24, 30, 'CUSTOMER INVOICE', 12, '#476472', 'letter-spacing="2"')}${text(24, 62, 'INV-0286', 25, '#193340')}${text(24, 91, '24 packages · Credit sale', 13, '#59717d')}<path d="M24 111H490" stroke="#beced3"/>${text(24, 141, 'TOTAL  KSh 48,000', 18, '#193340')}<g id="invoice-unpaid">${text(340, 141, 'UNPAID', 13, '#997136', 'font-weight="700"')}</g>${text(24, 166, 'ILLUSTRATIVE RECORD', 9, '#71858b')}`;
     svg.innerHTML = `<title>From the supplier to the final receipt</title><defs><linearGradient id="cargo-metal" x2="1" y2="0"><stop stop-color="#c3d2db"/><stop offset=".5" stop-color="#edf3f4"/><stop offset="1" stop-color="#b0c3ce"/></linearGradient></defs>
-    <rect width="1600" height="1400" fill="#17232d"/>
-    <g id="campus"><rect x="0" y="-180" width="1010" height="3650" rx="80" fill="#1b3035"/>
+    <rect width="1600" height="1400" fill="var(--s-bg)"/>
+    <g id="campus"><rect x="0" y="-180" width="1010" height="3650" rx="80" fill="var(--world-ground)"/>
       <path d="${road}" fill="none" stroke="#0e2029" stroke-width="132"/><path d="${road}" fill="none" stroke="#49606a" stroke-width="118"/><path d="${road}" fill="none" stroke="#263944" stroke-width="110"/>
       <path d="${road}" fill="none" stroke="#c7be92" stroke-width="2" stroke-dasharray="18 20"/>
       ${trees}
       <path d="M345 275H520M420 925H615M510 1580H650M510 2960H640" fill="none" stroke="#52666a" stroke-width="48"/>
-      <rect x="65" y="92" width="272" height="264" rx="14" fill="#34454b" stroke="#667d85"/>${materials}
+      <rect x="65" y="92" width="272" height="264" rx="14" fill="var(--world-yard)" stroke="#667d85"/>${materials}
       ${building(95, 385, 190, 95, 'SUPPLIER COLLECTION', `<path d="M20 45H165M20 68H165" stroke="#678477" stroke-width="3"/>`)}
-      ${text(75, 69, '01 / SUPPLIER', 17, '#dae5d7', 'letter-spacing="3"')}
+      ${text(75, 69, '01 / SUPPLIER', 17, 'var(--world-label)', 'letter-spacing="3"')}
 
       ${building(610, 755, 300, 425, 'FACTORY / PROCESSING', `${belt(32, 80, 58, 305)}<rect x="115" y="135" width="147" height="151" rx="12" fill="#66818b"/><rect x="130" y="150" width="117" height="75" rx="5" fill="#14323f"/><path d="M170 70V135M206 70V135" stroke="#8ca5ac" stroke-width="18"/>${text(137, 254, 'LINE / 01', 13, '#ecf0e9')}<path d="M90 345H252V408" fill="none" stroke="#698692" stroke-width="30"/>`)}
       <path d="M862 1163V1320" stroke="#66828e" stroke-width="30"/><path d="M862 1163V1320" stroke="#263f4c" stroke-width="20" stroke-dasharray="6 6"/>
       ${building(635, 1310, 290, 360, 'FINISHED GOODS', shelf(34, 70) + shelf(34, 166) + `<path d="M0 286H68" stroke="#a6b5b6" stroke-width="24"/>`)}
       ${building(640, 1745, 270, 130, 'SALES DESK', '<rect x="30" y="65" width="170" height="35" rx="5" fill="#8d9c92"/><rect x="115" y="44" width="50" height="32" rx="4" fill="#88b6bf"/>')}
       ${group('order-call', `<rect x="0" y="0" width="46" height="74" rx="8" fill="#dae4e4"/><rect x="5" y="10" width="36" height="50" rx="3" fill="#237b76"/><path d="M13 22Q9 43 29 49L34 40L25 35L20 38L18 31L21 28Z" fill="#ecf4ed"/><g id="order-signal"><path d="M-9 15Q-24 35-9 54M55 15Q70 35 55 54" fill="none" stroke="#75d5b6" stroke-width="3"/></g>`, 'transform="translate(690 1803)"')}
-      ${text(280, 2160, 'DISPATCH ROUTE', 12, '#9db3b9', 'letter-spacing="3"')}
+      ${text(280, 2160, 'DISPATCH ROUTE', 12, 'var(--world-label)', 'letter-spacing="3"')}
       ${building(635, 2830, 280, 225, 'CUSTOMER / RETAIL STORE', '<path d="M15 40H264" stroke="#83a89b" stroke-width="19"/><rect x="32" y="77" width="89" height="91" fill="#75939c"/><rect x="159" y="77" width="89" height="91" fill="#172e3a"/><path d="M180 80V162M159 118H245" stroke="#496772" stroke-width="4"/>')}
       ${vehicle('supplier-truck', true)}${vehicle('truck')}
       ${person('farm-worker', '#bba55d')}${person('receiver', '#d4a456')}${person('stock-worker', '#70aab4')}${person('loader', '#d4a456')}${person('customer-worker', '#739e8b')}
