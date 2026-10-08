@@ -16,10 +16,10 @@
     const slope = (xb - xa) * 6 * p * (1 - p) / (yb - ya);
     return { x: mix(xa, xb, ease(p)), y, angle: -Math.atan(slope) * 180 / Math.PI };
   }
-  const text = (x, y, value, size = 13, fill = '#bdd0d8', extra = '') => `<text x="${x}" y="${y}" fill="${fill}" font-size="${size}" font-family="system-ui,sans-serif" ${extra}>${value}</text>`;
+  const text = (x, y, value, size = 13, fill = '#bdd0d8', extra = '') => `<text x="${x}" y="${y}" fill="${fill}" font-size="${size}" font-family="Quicksand,sans-serif" ${extra}>${value}</text>`;
   const group = (id, markup, extra = '') => `<g id="${id}" ${extra}>${markup}</g>`;
   const sack = '<path d="M-8-19Q0-16 8-19L7-13Q19 12 10 17Q0 22-10 17Q-19 12-7-13Z" fill="#d8bd86" stroke="#f1dcad"/><path d="M-7-13H7M-8 5Q0 11 8 5" fill="none" stroke="#947741" stroke-width="2"/>';
-  const pack = '<path d="M-14-13L8-17L17-10V15L-5 19L-14 12Z" fill="#e3e6dc" stroke="#8ba1a6"/><path d="M-14-13L-5-6L17-10M-5-6V19" fill="none" stroke="#fff"/><path d="M-5 2L17-2V7L-5 11Z" fill="#208b9d"/><text x="-1" y="6" font-family="system-ui" font-size="5" fill="white">GOODS</text>';
+  const pack = '<path d="M-14-13L8-17L17-10V15L-5 19L-14 12Z" fill="#e3e6dc" stroke="#8ba1a6"/><path d="M-14-13L-5-6L17-10M-5-6V19" fill="none" stroke="#fff"/><path d="M-5 2L17-2V7L-5 11Z" fill="#208b9d"/><text x="-1" y="6" font-family="Quicksand,sans-serif" font-size="5" fill="white">GOODS</text>';
   function tree(x, y, s = 1) {
     return `<g transform="translate(${x} ${y}) scale(${s})"><ellipse cy="14" rx="23" ry="13" fill="#0d1c20" opacity=".35"/><path d="M0 10V-19" stroke="#8a7960" stroke-width="6"/><circle cy="-18" r="24" fill="#345f4c"/><circle cx="-9" cy="-27" r="15" fill="#4d775b"/><circle cx="9" cy="-21" r="14" fill="#406f51"/></g>`;
   }
@@ -207,7 +207,7 @@
     // Reduced motion keeps a fixed scale and steps the camera instead of panning.
     if (reduced.matches) cy = cameraY[Math.min(12, stage + 1)];
     const scale = mobile ? .84 : 1.03;
-    const focusX = stage === 0 ? 400 : stage === 1 ? mix(400, 590, ease(t - 1)) : 630;
+    const focusX = stage === 0 ? 400 : stage === 1 ? mix(400, 630, ease(t - 1)) : 630;
     const tx = (mobile ? 300 : 1010) - focusX * scale;
     const ty = (mobile ? 565 : 470) - cy * scale;
     nodes.campus.setAttribute('transform', `translate(${tx} ${ty}) scale(${scale})`);

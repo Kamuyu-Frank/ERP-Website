@@ -47,3 +47,11 @@
   font-display: swap;
   src: url(/assets/fonts/font-6.ttf) format('truetype');
 }
+
+@font-face {
+  font-family: 'Quicksand';
+  font-style: normal;
+  font-weight: 300 700;
+  font-display: swap;
+  src: url(/assets/fonts/quicksand-variable.ttf) format('truetype');
+}

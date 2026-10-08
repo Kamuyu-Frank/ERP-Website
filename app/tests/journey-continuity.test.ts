@@ -166,3 +166,23 @@ test('packages stay in workers hands during each carrying leg and ride with the 
   p.pose(12);
   expect(position('stock-7')).toEqual(delivered);
 });
+
+
+test('transport meets receiving without a sideways camera jump in either scroll direction', () => {
+  for (const width of [390, 1400]) {
+    const p = player(false, width);
+    const snapshot = (time: number) => {
+      p.pose(time);
+      return ['campus', 'supplier-truck', 'raw-goods', 'receiver'].map(id =>
+        p.nodes.get(`#${id}`).attributes.transform.match(/-?[\d.]+/g).map(Number),
+      );
+    };
+    const before = snapshot(1.9999);
+    const after = snapshot(2.0001);
+    for (let i = 0; i < before.length; i++) {
+      expect(Math.abs(after[i][0] - before[i][0])).toBeLessThan(.1);
+      expect(Math.abs(after[i][1] - before[i][1])).toBeLessThan(.1);
+    }
+    expect(snapshot(1.9999)).toEqual(before);
+  }
+});
