@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { MarketingPage } from '@/components/snaperp/site-chrome';
 
 export const Route = createFileRoute('/pricing')({
- head:()=>({meta:[{title:'Pricing | SnapERP'},{name:'description',content:'Build your SnapERP setup and request a tailored quote for modules, users, onboarding and support.'},{property:'og:title',content:'Pricing | SnapERP'},{property:'og:description',content:'Choose the workflows your business needs and discuss a tailored SnapERP setup.'},{property:'og:url',content:'https://snaperp-journey.higgsfield.app/pricing'}]}),
+ head:()=>({meta:[{title:'Pricing | SnapERP'},{name:'description',content:'Build your SnapERP setup and request a tailored quote for modules, users, onboarding and support.'},{property:'og:title',content:'Pricing | SnapERP'},{property:'og:description',content:'Choose the workflows your business needs and discuss a tailored SnapERP setup.'},{property:'og:url',content:'https://bentito.com/pricing'}]}),
  component:Page,
 });
 const options=['Point of sale','Sales','Purchasing','Inventory','Banking','Accounting & reports','Manufacturing','Fixed assets','Dimensions','M-Pesa','KRA eTIMS'];

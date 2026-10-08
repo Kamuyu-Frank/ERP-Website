@@ -5,7 +5,7 @@ import { useScrollShowcase } from '@/components/snaperp/use-scroll-showcase';
 import { MarketingPage } from '@/components/snaperp/site-chrome';
 
 export const Route = createFileRoute('/integrations')({
- head:()=>({meta:[{title:'Integrations | SnapERP'},{name:'description',content:'Explore connected M-Pesa payments and KRA eTIMS invoice workflows with SnapERP.'},{property:'og:title',content:'Integrations | SnapERP'},{property:'og:description',content:'Explore connected M-Pesa payments and KRA eTIMS invoice workflows with SnapERP.'},{property:'og:url',content:'https://snaperp-journey.higgsfield.app/integrations'}]}),
+ head:()=>({meta:[{title:'Integrations | SnapERP'},{name:'description',content:'Explore connected M-Pesa payments and KRA eTIMS invoice workflows with SnapERP.'},{property:'og:title',content:'Integrations | SnapERP'},{property:'og:description',content:'Explore connected M-Pesa payments and KRA eTIMS invoice workflows with SnapERP.'},{property:'og:url',content:'https://bentito.com/integrations'}]}),
  component:Page,
 });
 const connections = [

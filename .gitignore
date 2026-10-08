@@ -1,1 +1,4 @@
 node_modules
+
+# Manual deployment releases and private SQLite storage
+.deploy/

@@ -5,7 +5,7 @@ import { useScrollShowcase } from '@/components/snaperp/use-scroll-showcase';
 import { MarketingPage } from '@/components/snaperp/site-chrome';
 
 export const Route = createFileRoute('/features')({
- head:()=>({meta:[{title:'Features | SnapERP'},{name:'description',content:'Explore connected business modules and the next features planned for SnapERP.'},{property:'og:title',content:'Features | SnapERP'},{property:'og:description',content:'Explore connected business modules and the next features planned for SnapERP.'},{property:'og:url',content:'https://snaperp-journey.higgsfield.app/features'}]}),
+ head:()=>({meta:[{title:'Features | SnapERP'},{name:'description',content:'Explore connected business modules and the next features planned for SnapERP.'},{property:'og:title',content:'Features | SnapERP'},{property:'og:description',content:'Explore connected business modules and the next features planned for SnapERP.'},{property:'og:url',content:'https://bentito.com/features'}]}),
  component:Page,
 });
 const modules = [

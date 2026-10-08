@@ -19,6 +19,7 @@ const QUANTA_ICONS_SHIM = fileURLToPath(
 );
 
 export default defineConfig(({ command, mode }) => {
+  const standalone = mode === "standalone";
   const designInspectorEnabled = process.env.HF_DESIGN_INSPECTOR === "1" || mode === "design";
 
   return {
@@ -47,7 +48,7 @@ export default defineConfig(({ command, mode }) => {
       // both variants bundle their edge build (react-dom's web-streams server,
       // etc.) instead of the Node variant leaning on nodejs_compat shims.
       // `vite dev` SSR runs in Node, where default node resolution is correct.
-      ...(command === "build"
+      ...(command === "build" && !standalone
         ? {
             target: "webworker" as const,
             resolve: {
@@ -72,6 +73,13 @@ export default defineConfig(({ command, mode }) => {
       rollupOptions: { external: [/^cloudflare:/] },
     },
     plugins: [
+      ...(standalone ? [{
+        name: 'snaperp-node-bindings',
+        enforce: 'pre' as const,
+        resolveId(id: string) {
+          if (id.endsWith('/bindings.server')) return fileURLToPath(new URL('./src/lib/bindings.node.server.ts', import.meta.url));
+        },
+      }] : []),
       // Local SVG assets (e.g. the branded generate-button sparkle) import as
       // React components via `?react`. `icon: true` sizes them 1em; fill is
       // forced to currentColor so they color like text. Keep the viewBox so

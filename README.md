@@ -84,3 +84,11 @@ placeholders and must not be used to deploy to production. Independent Cloudflar
 hosting needs an account, a Worker target, a D1 database and a deployment token
 stored as a GitHub secret; Higgsfield hosting needs its supported deployment path.
 CI and artifact creation require no hosting credentials.
+
+## Manual deployment to bentito.com
+
+Run `bash deploy.sh --setup` once on the server, then `bash deploy.sh` to build,
+validate and activate a release. The checkout is `/var/www/bentito/ERP-Website`.
+This uses Node.js, SQLite, systemd and Nginx independently of GitHub Actions.
+See [manual deployment instructions](deploy/README.md) for runtime prerequisites,
+HTTPS setup, data storage, health checks and rollback behavior.
