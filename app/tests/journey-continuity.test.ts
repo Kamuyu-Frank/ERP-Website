@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { runInNewContext } from 'node:vm';
 
 const source = readFileSync(new URL('../public/journey-scenes.js', import.meta.url), 'utf8');
-function player(reduced = true) {
+function player(reduced = true, width = 1400) {
   const nodes = new Map<string, any>();
   const callbacks = new Map<number, (time: number) => void>();
   let sequence = 0, mounts = 0, now = 0;
@@ -19,7 +19,7 @@ function player(reduced = true) {
     });
     return nodes.get(id);
   }
-  const window: any = { matchMedia: () => ({ matches: reduced }), addEventListener() {} };
+  const window: any = { innerWidth: width, matchMedia: () => ({ matches: reduced }), addEventListener() {} };
   runInNewContext(source, {
     document: { getElementById: () => node('svg') }, window,
     requestAnimationFrame(callback: (time: number) => void) { callbacks.set(++sequence, callback); return sequence; },
@@ -91,4 +91,23 @@ test('delivery completes on credit before eTIMS invoice is settled through M-Pes
   p.pose(5.8);
   expect(opacity('payment-success')).toBe(0);
   expect(opacity('invoice-unpaid')).toBe(1);
+});
+
+
+test('camera follows the route on desktop and mobile and reverses deterministically', () => {
+  for (const width of [390, 1400]) {
+    const p = player(false, width);
+    const farm = p.pose(.3);
+    const farmCamera = p.nodes.get('#campus').attributes.transform;
+    p.pose(7.5);
+    expect(p.nodes.get('#campus').attributes.transform).not.toBe(farmCamera);
+    expect(p.nodes.get('#campus').attributes.transform).not.toMatch(/NaN|Infinity/);
+    expect(p.pose(.3)).toBe(farm);
+    expect(p.mounts).toBe(1);
+  }
+  const reduced = player(true);
+  reduced.pose(0);
+  const overview = reduced.nodes.get('#campus').attributes.transform;
+  reduced.pose(8);
+  expect(reduced.nodes.get('#campus').attributes.transform).toBe(overview);
 });

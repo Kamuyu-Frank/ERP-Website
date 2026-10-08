@@ -6,3 +6,8 @@ body.hero-embed{background:#f3f5ee}.hero-embed>header,.hero-embed .intro,.hero-e
 .journey-embed .transport,.journey-embed #scrubber,.journey-embed .stages,.journey-embed .scene-copy{display:none}.journey-embed .theatre{background:#f3f5ee}.journey-embed svg{height:100vh;width:100%;}
 
 .journey-embed{background:#101b24;color:#f2f6f8}.journey-embed .theatre{background:#101b24}.journey-embed .station-label{fill:#abbcc7}.journey-embed .floor-label{fill:#abbcc7}.journey-embed .doc-title{fill:#f2f6f8}.journey-embed .doc-ref{fill:#abbcc7}
+
+/* The embedded world shares the site's canvas, with no player chrome. */
+html:has(.journey-embed),body.journey-embed,.journey-embed .theatre{background:#17232d}
+.journey-embed main,.journey-embed .theatre{height:100vh;overflow:hidden}
+.journey-embed svg{width:100%;height:100%;min-height:0}

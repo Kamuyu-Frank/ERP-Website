@@ -13,3 +13,49 @@ html{scroll-behavior:smooth;scroll-padding-top:100px;background:var(--s-bg);colo
 
 /* Each chapter holds the scene while its own explanation passes. */
 .story-step{min-height:90dvh;padding-top:15dvh;padding-bottom:15dvh}.journey-animation-frame{height:400px}.journey-sticky{top:96px}@media(max-width:1100px){.journey-animation-frame{height:320px}}@media(max-width:800px){.story-step{min-height:85dvh;padding-top:45px;padding-bottom:70px}.journey-animation-frame{height:230px}.journey-sticky{top:80px}}@media(max-width:480px){.journey-animation-frame{height:200px}.story-step{min-height:80dvh}}
+
+/* A full-viewport stage sits inside one continuous scroll track. */
+.journey-immersive{--journey-header:78px;position:relative;display:block;width:100%;max-width:none;height:calc(740svh - var(--journey-header));margin:0;background:var(--s-bg)}
+.journey-immersive .journey-sticky{position:sticky;top:var(--journey-header);height:calc(100svh - var(--journey-header));min-height:0;max-height:none;width:100%;padding:0;border:0;border-radius:0;background:var(--s-bg);box-shadow:none;overflow:hidden;isolation:isolate}
+.journey-immersive .journey-animation-frame{position:absolute;inset:0;width:100%;height:100%;margin:0;border:0;border-radius:0;background:transparent;pointer-events:none;z-index:-1}
+.journey-anchor{position:absolute;top:calc(var(--step)*80svh);scroll-margin-top:var(--journey-header);width:1px;height:1px;pointer-events:none}
+.journey-copy{position:absolute;top:12%;left:clamp(24px,5vw,90px);width:28%;max-width:420px;pointer-events:none}
+.journey-eyebrow{display:flex;align-items:center;gap:18px;font-family:var(--s-mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--s-accent);margin-bottom:22px}
+.journey-eyebrow span{color:var(--s-muted)}
+.journey-copy h3{font-size:clamp(32px,3.5vw,58px);line-height:1.08;text-wrap:balance;animation:journey-copy-in .35s ease-out}
+.journey-description{font-size:clamp(14px,1.15vw,17px);line-height:1.7;color:var(--s-muted);margin-top:24px}
+.journey-receipt{display:flex;flex-direction:column;align-items:flex-start;gap:5px;margin-top:28px;padding-top:18px;border-top:1px solid var(--s-line);font-size:11px;color:var(--s-muted)}
+.journey-receipt strong{font:400 17px var(--s-mono);color:var(--s-ink)}
+.journey-receipt small{font-size:11px}
+.journey-bottom{position:absolute;bottom:16px;left:5%;right:5%;padding-top:35px;background:linear-gradient(transparent,var(--s-bg) 32%)}
+.journey-playback{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;font:10px var(--s-mono);color:var(--s-muted)}
+.journey-immersive .tour-toggle{border:0;background:transparent;font-size:11px;padding:8px}
+.journey-immersive .stage-controls{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:12px;padding:0;border:0}
+.journey-immersive .stage-controls button{display:flex;flex-direction:row;justify-content:flex-start;align-items:center;gap:12px;padding:12px 0;border:0;border-top:2px solid var(--s-line);border-radius:0;background:transparent}
+.journey-immersive .stage-controls button[aria-pressed='true']{border-color:var(--s-accent);background:transparent;color:var(--s-ink)}
+.journey-immersive .stage-controls strong{font-size:12px}
+.journey-immersive .illustration-note{margin-top:8px;font-size:9px}
+@keyframes journey-copy-in{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:800px){
+ .journey-immersive{--journey-header:70px}
+ .journey-copy{top:20px;left:24px;right:24px;width:auto;max-width:none}
+ .journey-eyebrow{font-size:9px;margin-bottom:12px}
+ .journey-copy h3{font-size:clamp(26px,5vw,36px);max-width:26ch}
+ .journey-description{font-size:13px;line-height:1.55;margin-top:12px;max-width:58ch}
+ .journey-receipt{flex-direction:row;align-items:center;flex-wrap:wrap;gap:6px 12px;margin-top:12px;padding-top:10px;font-size:10px}
+ .journey-receipt strong{font-size:12px}.journey-receipt small{font-size:10px}
+ .journey-bottom{left:20px;right:20px;bottom:12px;padding-top:20px}
+ .journey-playback{font-size:9px;margin-bottom:6px}
+ .journey-immersive .stage-controls{gap:5px}
+ .journey-immersive .stage-controls button{flex-direction:column;gap:5px;padding:8px 0;min-height:44px}
+ .journey-immersive .stage-controls strong{font-size:8px}.journey-immersive .stage-controls span{font-size:9px}
+ .journey-immersive .illustration-note{font-size:8px;max-width:45ch}
+}
+@media(max-height:650px) and (min-width:801px){.journey-copy{top:5%}.journey-copy h3{font-size:32px}.journey-description{margin-top:14px;font-size:13px}.journey-receipt{margin-top:14px;padding-top:10px}.journey-bottom{bottom:8px}.journey-playback{margin-bottom:3px}}
+
+/* Keep moving geometry behind a quiet reading area. */
+.journey-immersive .journey-animation-frame{z-index:-2}
+.journey-immersive .journey-sticky:before{content:'';position:absolute;inset:0;z-index:-1;pointer-events:none;background:linear-gradient(90deg,var(--s-bg) 0%,var(--s-bg) 30%,color-mix(in srgb,var(--s-bg) 95%,transparent) 35%,transparent 49%)}
+@media(max-width:800px){.journey-immersive .journey-sticky:before{background:linear-gradient(180deg,var(--s-bg) 0%,var(--s-bg) 27%,transparent 43%)}}
+.journey-immersive .journey-bottom{left:0;right:0;bottom:0;padding-left:5%;padding-right:5%;padding-bottom:16px}
+@media(max-width:800px){.journey-immersive .journey-sticky:before{background:linear-gradient(180deg,var(--s-bg) 0%,var(--s-bg) 34%,transparent 44%)}.journey-immersive .journey-bottom{padding-left:20px;padding-right:20px;padding-bottom:12px}}

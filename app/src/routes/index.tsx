@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type CSSProperties, type FormEvent } from 'react';
 import { journeySteps } from '@/components/snaperp/business-world';
 import { requestDemo } from '@/lib/api/demo.functions';
 export const Route = createFileRoute('/')({ component: Home });
@@ -15,11 +15,11 @@ function Home(){
   let frame=0;
   const sync=()=>{cancelAnimationFrame(frame);frame=requestAnimationFrame(()=>{
    const section=sectionRef.current;if(!section)return;
-   const steps=Array.from(section.querySelectorAll<HTMLElement>('.story-step'));
-   const marker=window.innerWidth<=800?Math.min(window.innerHeight*.85,(section.querySelector('.journey-sticky')?.getBoundingClientRect().bottom||300)+45):window.innerHeight*.48;
-   let progress=0;
-   steps.forEach((node,i)=>{const rect=node.getBoundingClientRect();if(rect.top<=marker)progress=i+Math.max(0,Math.min(1,(marker-rect.top)/rect.height));});
-   journeyTime.current=Math.min(56,progress*7);
+   const sticky=section.querySelector<HTMLElement>('.journey-sticky');if(!sticky)return;
+   const header=window.innerWidth<=800?70:78;
+   const travel=section.offsetHeight-sticky.offsetHeight;
+   const progress=Math.max(0,Math.min(8,(header-section.getBoundingClientRect().top)/Math.max(1,travel)*8));
+   journeyTime.current=progress*7;
    setStage(Math.min(7,Math.floor(progress)));syncJourney();
   });};
   window.addEventListener('scroll',sync,{passive:true});window.addEventListener('resize',sync);sync();
@@ -29,27 +29,52 @@ function Home(){
   if(!tour)return;
   const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   let frame=0;let start:number|null=null;
+  const initial=journeyTime.current>=55.9?0:journeyTime.current/7*5;
+  const stop=()=>setTour(false);
+  window.addEventListener('wheel',stop,{passive:true});window.addEventListener('touchstart',stop,{passive:true});
   const play=(now:number)=>{
    if(start===null)start=now;
-   const elapsed=Math.min(40,(now-start)/1000);
+   const elapsed=Math.min(40,initial+(now-start)/1000);
    const chapter=Math.min(7,Math.floor(elapsed/5));
    setStage(chapter);
    journeyTime.current=reduced?Math.min(56,(chapter+1)*7-.01):elapsed/5*7;
    syncJourney();
-   if(elapsed<40)frame=requestAnimationFrame(play);
+   const section=sectionRef.current;const sticky=section?.querySelector<HTMLElement>('.journey-sticky');
+   if(section&&sticky){const header=window.innerWidth<=800?70:78;window.scrollTo({top:window.scrollY+section.getBoundingClientRect().top-header+(section.offsetHeight-sticky.offsetHeight)*elapsed/40,behavior:'instant'});}
+   if(elapsed<40)frame=requestAnimationFrame(play);else setTour(false);
   };
   frame=requestAnimationFrame(play);
-  return()=>cancelAnimationFrame(frame);
+  return()=>{cancelAnimationFrame(frame);window.removeEventListener('wheel',stop);window.removeEventListener('touchstart',stop);};
  },[tour]);
  useEffect(()=>{if(privacy)document.getElementById('privacy-close')?.focus();},[privacy]);
  const closePrivacy=()=>{setPrivacy(false);document.querySelector<HTMLButtonElement>('.privacy-link')?.focus();};
- const jump=(i:number)=>{setTour(false);setStage(i);document.getElementById(`step-${i}`)?.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});};
+ const jump=(i:number)=>{
+  setTour(false);const section=sectionRef.current;const sticky=section?.querySelector<HTMLElement>('.journey-sticky');if(!section||!sticky)return;
+  const header=window.innerWidth<=800?70:78;
+  window.scrollTo({top:window.scrollY+section.getBoundingClientRect().top-header+(section.offsetHeight-sticky.offsetHeight)*(i+.04)/8,behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});
+ };
  const selected=journeySteps[stage];
  return <><a className="skip-link" href="#main">Skip to content</a>
  <header className="site-header"><div className="header-inner"><Brand/><button className="menu-toggle" aria-expanded={menu} aria-controls="site-nav" onClick={()=>setMenu(!menu)}>{menu?'Close':'Menu'}</button><nav id="site-nav" className={menu?'site-nav nav-open':'site-nav'} aria-label="Main navigation">{[['Workflow','#workflow'],['Features','#features'],['Integrations','#integrations'],['Pricing','#pricing']].map(([label,link])=><a key={label} href={link} onClick={()=>setMenu(false)}>{label}</a>)}<a className="sign-in" href="https://erp.werevu.co.ke/">Sign in ↗</a><a className="nav-demo" href="#demo" onClick={()=>setMenu(false)}>Book a demo ↗</a></nav></div></header>
  <main id="main"><section className="hero"><div className="hero-art"><img src="/assets/factory.webp" alt="Illustration of a connected factory, warehouse and delivery operation" fetchPriority="high" width="2048" height="1360"/></div><div className="hero-content"><p className="hero-eyebrow">THE CONNECTED BUSINESS</p><h1>SnapERP.<br/>Business in motion.</h1><p className="hero-copy">Follow your goods from purchase to payment and delivery. Keep sales, stock and accounts connected.</p><div className="hero-actions"><a href="#workflow" className="hero-explore">Explore workflow ↓</a><a href="#demo" className="hero-demo">Book a demo ↗</a></div></div><div className="hero-bottom"><span>Made for businesses that move goods.</span><span className="hero-bottom-right">Purchasing / Stock / Sales / Accounts</span></div></section>
  <section className="journey-intro section-wrap" id="workflow"><h2>One journey.<br/><span>Every handover connected.</span></h2><p>Take a product through the business. Select a stage or follow the story to see how the records fit together.</p></section>
- <section className="journey" ref={sectionRef} aria-label="Animated purchasing to delivery workflow"><div className="journey-sticky"><div className="world-topline"><span>ILLUSTRATIVE BUSINESS WORKFLOW</span><button className="tour-toggle" onClick={()=>{if(!tour)setStage(0);setTour(!tour);}} aria-pressed={tour}>{tour?'Pause tour':'Play tour'} {tour?'Ⅱ':'▷'}</button></div><iframe ref={journeyFrame} onLoad={syncJourney} src="/animation-lab.html?journey=1" title="Scroll-controlled purchasing to delivery animation" className="journey-animation-frame"/><div className="world-record" aria-live="polite"><div><span className="record-label">{selected.record}</span><strong>{selected.ref}</strong></div><div className="record-status"><span>{selected.detail}</span><small>{selected.module}</small></div></div><div className="stage-controls" role="group" aria-label="Choose a workflow stage">{journeySteps.map((s,i)=><button key={s.name} aria-pressed={stage===i} onClick={()=>jump(i)} title={s.name}><span>{String(i+1).padStart(2,'0')}</span><strong>{s.name}</strong></button>)}</div><p className="illustration-note">Concept animation. Module availability and integration setup are confirmed during your demo.</p></div><div className="story-column">{journeySteps.map((s,i)=><article className={`story-step ${stage===i?'story-active':''}`} id={`step-${i}`} key={s.name}><div className="step-heading"><img src={`/assets/icon-${s.icon}.png`} alt="" role="presentation" width="36" height="36"/><span>{s.name}</span></div><h3>{s.title}</h3><p>{s.body}</p><div className="story-document"><span>{s.record}</span><strong>{s.ref}</strong><small>{s.event}</small></div></article>)}</div></section>
+ <section className="journey journey-immersive" ref={sectionRef} aria-label="Scroll through the farm to payment journey">
+  {journeySteps.map((s,i)=><span key={s.name} id={`step-${i}`} className="journey-anchor" style={{'--step':i} as CSSProperties} aria-hidden="true"/>)}
+  <div className="journey-sticky">
+   <iframe ref={journeyFrame} onLoad={syncJourney} src="/animation-lab.html?journey=1&layout=immersive" title="Continuous farm to payment animation" className="journey-animation-frame" tabIndex={-1}/>
+   <div className="journey-copy" aria-live="polite" aria-atomic="true">
+    <p className="journey-eyebrow"><span>{String(stage+1).padStart(2,'0')} / 08</span> {selected.name}</p>
+    <h3 key={selected.name}>{selected.title}</h3>
+    <p className="journey-description">{selected.body}</p>
+    <div className="journey-receipt"><span>{selected.record}</span><strong>{selected.ref}</strong><small>{selected.detail}</small></div>
+   </div>
+   <div className="journey-bottom">
+    <div className="journey-playback"><span>Scroll to follow the journey ↓</span><button className="tour-toggle" onClick={()=>setTour(!tour)} aria-pressed={tour}>{tour?'Pause tour Ⅱ':'Play tour ▷'}</button></div>
+    <nav className="stage-controls" aria-label="Choose a workflow stage">{journeySteps.map((s,i)=><button key={s.name} aria-pressed={stage===i} onClick={()=>jump(i)} title={s.name}><span>{String(i+1).padStart(2,'0')}</span><strong>{s.name}</strong></button>)}</nav>
+    <p className="illustration-note">Illustrative workflow · Integration setup and module availability confirmed during your demo.</p>
+   </div>
+  </div>
+ </section>
  <section className="integrations section-wrap" id="integrations"><div className="section-heading"><h2>Local connections.<br/>Clearer business records.</h2><p>Discuss the payment and tax-invoice setup your business needs.</p></div><div className="integration-layout"><div className="integration-rows"><article><div className="integration-name">M-Pesa<span>COLLECTIONS</span></div><h3>Connect payments to invoices.</h3><p>Explore payment requests and matching for configured collections. Confirm supported collection modes, onboarding and plan availability during your demo.</p><ul><li>Invoice payment requests</li><li>Configured collection matching</li><li>Connected customer receipts</li></ul></article><article><div className="integration-name">KRA eTIMS<span>TAX INVOICING</span></div><h3>Follow the invoice handoff.</h3><p>Explore configured invoice and credit-note stamping. Live onboarding, credentials and successful stamping must be confirmed for your setup.</p><ul><li>Configured invoice stamping</li><li>Credit-note workflow</li><li>Document traceability</li></ul></article></div><figure><img src="/assets/integrations.webp" alt="Concept sculpture connecting an invoice and a payment phone" loading="lazy" width="2048" height="1360"/><figcaption>Payments and invoices, connected in your workflow.</figcaption></figure></div></section>
  <section className="features section-wrap" id="features"><div className="features-lead"><h2>One connected<br/>workspace.</h2><p>Choose the modules your business needs. Give your team a common view of the records behind each transaction.</p><img src="/assets/steel.webp" alt="Brushed metal detail with a blue inlay" loading="lazy" width="2048" height="1152"/></div><div className="capabilities">{[['Sales','Customers, sales documents, invoices and receipts.',0],['Purchasing','Suppliers, orders, goods receipts and supplier transactions.',1],['Inventory','Items, stock movements and stock inquiries.',2],['Banking','Bank records, customer payments and supplier balances.',4],['Accounting & reports','General Ledger and financial and operational reports.',3],['Optional modules','Discuss manufacturing, fixed assets and dimensions for your setup.',5]].map(([name,copy,icon])=><article key={String(name)}><img src={`/assets/icon-${icon}.png`} alt="" role="presentation" width="40" height="40"/><div><h3>{name}</h3><p>{copy}</p></div></article>)}</div></section>
  <section className="pricing section-wrap" id="pricing"><div className="pricing-type"><h2>Your business.<br/><span>Your setup.</span></h2><p>Plan your users, modules, onboarding and support around the way your business works.</p></div><div className="setup-list">{[['Choose your modules','Start with the workflows you need.'],['Size your team','Confirm included and additional users.'],['Agree your onboarding','Discuss data import and training.'],['Confirm the offer','Review billing, add-ons and support terms.']].map(([title,copy],i)=><div key={title}><span>{String(i+1).padStart(2,'0')}</span><h3>{title}</h3><p>{copy}</p></div>)}</div><a href="#demo" className="pricing-action"><span>Talk to us about your setup.</span><strong>Book a demo ↗</strong></a></section>

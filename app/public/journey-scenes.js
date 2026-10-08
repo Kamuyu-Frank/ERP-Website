@@ -76,7 +76,7 @@
   function mount(){
     if(mounted)return;
     mounted=true;
-    svg.setAttribute('viewBox','0 0 1000 660');
+    svg.setAttribute('viewBox',window.innerWidth<=800?'0 0 600 850':'0 0 1400 800');
     svg.removeAttribute('aria-labelledby');
     const floor=poly([point(-350,-145,-5),point(430,-145,-5),point(430,215,-5),point(-350,215,-5)],'url(#campus-floor)');
     let grid='';for(let x=-330;x<430;x+=40)grid+=line(point(x,-140,-4),point(x,210,-4),'#68879a',.5,'opacity=".13"');
@@ -90,7 +90,7 @@
     const records=['PURCHASE ORDER','GOODS RECEIPT','WORK ORDER','FINISHED STOCK','SALES ORDER','CUSTOMER INVOICE','DELIVERY NOTE','PAYMENT RECEIPT'];
     const refs=['PO-1048','GRN-1048','WO-0241','ST-0241','SO-0286','INV-0286','DSP-0286','RCT-0286'];
     const details=['Maize collection','Maize received','Milling maize flour','24 flour packages','Credit sale · reserved','KSh 48,000 · unpaid','Delivered · unpaid','M-Pesa · receipt matched'];
-    svg.innerHTML=`<title>One connected business journey</title><defs><linearGradient id="campus-floor" x2="0.8" y2="1"><stop stop-color="#263d4e"/><stop offset="1" stop-color="#14242f"/></linearGradient><radialGradient id="ambient"><stop stop-color="#263f51"/><stop offset="1" stop-color="#101b24"/></radialGradient></defs><rect width="1000" height="660" fill="#101b24"/><ellipse cx="490" cy="310" rx="490" ry="260" fill="url(#ambient)"/>
+    svg.innerHTML=`<title>One connected business journey</title><defs><linearGradient id="campus-floor" x2="0.8" y2="1"><stop stop-color="#263d4e"/><stop offset="1" stop-color="#14242f"/></linearGradient><radialGradient id="ambient"><stop stop-color="#263f51"/><stop offset="1" stop-color="#101b24"/></radialGradient></defs><rect width="1400" height="850" fill="#17232d"/>
     <g id="campus" transform="translate(40 105) scale(.86)">${floor}${grid}${road}
     ${supplier}${warehouse}${customer}
     ${label(-310,-155,'MAIZE FARM')}${label(100,-125,'WAREHOUSE')}${label(300,-120,'CUSTOMER')}
@@ -106,7 +106,7 @@
     ${group('handover',carton(0,0,0,24))}
     ${label(-80,-65,'MAIZE MILL')}
     </g>
-    <g transform="translate(35 20)"><rect width="244" height="112" rx="12" fill="#142734" stroke="#345164"/><rect x="0" y="20" width="3" height="30" rx="1.5" fill="${C.accent}"/>
+    <g visibility="hidden" transform="translate(35 20)"><rect width="244" height="112" rx="12" fill="#142734" stroke="#345164"/><rect x="0" y="20" width="3" height="30" rx="1.5" fill="${C.accent}"/>
     ${records.map((title,i)=>`<g id="record-${i}" opacity="0">${text(18,25,title,9,C.light)}${text(18,53,refs[i],19,C.white)}${text(18,78,details[i],10,C.muted)}</g>`).join('')}
     <path d="M18 96H225" stroke="#355060"/><path id="record-progress" d="M18 96H225" stroke="#00b7df" stroke-width="2" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1"/></g>
     <g id="tax-panel" transform="translate(310 20)" opacity="0">
@@ -131,7 +131,7 @@
       <g id="payment-success" opacity="0">${text(263,53,'✓ PAYMENT RECEIVED',13,'#21663e')}${text(263,81,'RCT-0286 · Paid · Balance KSh 0',10,'#21663e')}</g>
       ${text(521,94,'DEMO',9,'#728791')}
     </g>
-    <g transform="translate(36 638)">${text(0,0,'FARM',9)}<path d="M85-4H805" stroke="#355060" stroke-dasharray="4 7"/><circle id="journey-dot" cx="85" cy="-4" r="4" fill="${C.light}"/>${text(824,0,'PAID',9)}</g>`;
+    <g visibility="hidden" transform="translate(36 638)">${text(0,0,'FARM',9)}<path d="M85-4H805" stroke="#355060" stroke-dasharray="4 7"/><circle id="journey-dot" cx="85" cy="-4" r="4" fill="${C.light}"/>${text(824,0,'PAID',9)}</g>`;
     wheels={delivery:svg.querySelector('#truck').querySelectorAll('[data-wheel]'),supplier:svg.querySelector('#supplier-truck').querySelectorAll('[data-wheel]')};
     nodes=Object.fromEntries(['tax-panel','tax-packet','tax-sending','tax-stamp','invoice-unpaid','invoice-paid','payment-panel','payment-check','payment-pending','payment-success','supplier-truck','campus','raw-goods','finished-goods','stock-goods','truck','transfer-goods','truck-load','handover','machine-wheel','record-progress','journey-dot',...records.map((_,i)=>`record-${i}`)].map(id=>[id,svg.querySelector(`#${id}`)]));
   }
@@ -139,8 +139,26 @@
   const mix=(a,b,p)=>a+(b-a)*p;
   const alpha=(id,v)=>nodes[id].setAttribute('opacity',clamp(v));
   const position=(id,x,y,z=0,scale=1)=>{const q=point(x,y,z);nodes[id].setAttribute('transform',`translate(${q[0]} ${q[1]}) scale(${scale}) translate(-450 -275)`);};
+  // Camera keyframes share the goods timeline: no scene cuts at stage boundaries.
+  const cameraStops=[
+    [-230,0,1.9],[-145,30,1.8],[-70,0,2.1],[50,0,2],
+    [120,5,1.85],[140,10,1.8],[120,60,1.7],[300,60,1.9],[280,40,1.7],
+  ];
+  function camera(t){
+    const mobile=window.innerWidth<=800;
+    const i=Math.min(7,Math.floor(t)),p=smooth(t-i),a=cameraStops[i],b=cameraStops[i+1];
+    const x=mix(a[0],b[0],p),y=mix(a[1],b[1],p);
+    const focus=point(x,y,35);
+    const scale=reduced.matches?(mobile?.75:1.15):mix(a[2],b[2],p)*(mobile?.85:1);
+    const center=reduced.matches?point(50,30):focus;
+    const tx=(mobile?300:950)-center[0]*scale,ty=(mobile?580:430)-center[1]*scale;
+    nodes.campus.setAttribute('transform',`translate(${tx} ${ty}) scale(${scale})`);
+    const hud=mobile?'translate(25 320) scale(.84)':'translate(730 35) scale(.9)';
+    nodes['tax-panel'].setAttribute('transform',hud);nodes['payment-panel'].setAttribute('transform',hud);
+    svg.setAttribute('viewBox',mobile?'0 0 600 850':'0 0 1400 800');
+  }
   function draw(t){
-    mount();
+    mount();camera(t);
     const stage=Math.min(7,Math.floor(t));
     if(stage!==lastStage){svg.setAttribute('aria-label',`Connected business journey: ${names[stage]}`);lastStage=stage;}
     // One absolute timeline preserves every handover when scrubbing backwards.
@@ -198,5 +216,6 @@
     if(reduced.matches){cancelAnimationFrame(frame);frame=0;previous=0;displayed=target;draw(displayed);}
     else if(!frame)frame=requestAnimationFrame(animate);
   };
+  window.addEventListener('resize',()=>{if(mounted)draw(displayed);});
   window.addEventListener('pagehide',()=>cancelAnimationFrame(frame));
 })();
