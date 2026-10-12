@@ -24,8 +24,8 @@ describe("scroll-scrub website landing contract", () => {
     const landingRoute = readFileSync(new URL("../src/routes/index.tsx", import.meta.url), "utf8");
     const appRoute = readFileSync(new URL("../src/routes/app.tsx", import.meta.url), "utf8");
 
-    // The public site now uses the persistent SVG journey, with origin-checked messages.
-    expect(landingRoute).toContain('src="/journey.html?continuous=1"');
+    // The embedded player stays same-origin and accepts a cache version.
+    expect(landingRoute).toMatch(/src="\/journey\.html\?continuous=1(?:&v=[a-z0-9-]+)?"/);
     expect(landingRoute).not.toContain('<LandingPage');
     const journey = readFileSync(new URL('../public/journey.html', import.meta.url), 'utf8');
     expect(journey).toContain('event.origin!==location.origin');

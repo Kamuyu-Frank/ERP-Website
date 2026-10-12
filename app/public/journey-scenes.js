@@ -19,15 +19,15 @@
   const text = (x, y, value, size = 13, fill = 'var(--world-label)', extra = '') => `<text x="${x}" y="${y}" fill="${fill}" font-size="${size}" font-family="Quicksand,sans-serif" ${extra}>${value}</text>`;
   const group = (id, markup, extra = '') => `<g id="${id}" ${extra}>${markup}</g>`;
   const sack = '<path d="M-8-19Q0-16 8-19L7-13Q19 12 10 17Q0 22-10 17Q-19 12-7-13Z" fill="#d8bd86" stroke="#f1dcad"/><path d="M-7-13H7M-8 5Q0 11 8 5" fill="none" stroke="#947741" stroke-width="2"/>';
-  const pack = '<path d="M-14-13L8-17L17-10V15L-5 19L-14 12Z" fill="#e3e6dc" stroke="#8ba1a6"/><path d="M-14-13L-5-6L17-10M-5-6V19" fill="none" stroke="#fff"/><path d="M-5 2L17-2V7L-5 11Z" fill="#208b9d"/><text x="-1" y="6" font-family="Quicksand,sans-serif" font-size="5" fill="white">GOODS</text>';
+  const pack = '<ellipse cx="6" cy="22" rx="20" ry="6" fill="#07171d" opacity=".22"/><path d="M-14-13L8-17L17-10V15L-5 19L-14 12Z" fill="url(#parcel-front)" stroke="#8ba1a6"/><path d="M-14-13L8-17L17-10L-5-6Z" fill="url(#parcel-top)"/><path d="M-14-13L-5-6V19L-14 12Z" fill="#7c9399"/><path d="M-14-13L-5-6L17-10M-5-6V19" fill="none" stroke="#fff"/><path d="M-5 2L17-2V7L-5 11Z" fill="#208b9d"/><text x="-1" y="6" font-family="Quicksand,sans-serif" font-size="5" fill="white">GOODS</text>';
   function tree(x, y, s = 1) {
-    return `<g transform="translate(${x} ${y}) scale(${s})"><ellipse cy="14" rx="23" ry="13" fill="#0d1c20" opacity=".35"/><path d="M0 10V-19" stroke="#8a7960" stroke-width="6"/><circle cy="-18" r="24" fill="#345f4c"/><circle cx="-9" cy="-27" r="15" fill="#4d775b"/><circle cx="9" cy="-21" r="14" fill="#406f51"/></g>`;
+    return `<g transform="translate(${x} ${y}) scale(${s})"><ellipse cy="14" rx="23" ry="13" fill="#0d1c20" opacity=".35"/><path d="M0 10V-19" stroke="#8a7960" stroke-width="6"/><circle cy="-18" r="24" fill="url(#tree-volume)"/><circle cx="-9" cy="-27" r="15" fill="url(#tree-volume)"/><circle cx="9" cy="-21" r="14" fill="#406f51"/></g>`;
   }
   function person(id, color = '#e6ac51') {
     return group(id, `<ellipse cy="24" rx="15" ry="6" fill="#07171d" opacity=".4"/>
       <g id="${id}-left"><path d="M-5 5L-7 23" stroke="#234152" stroke-width="7" stroke-linecap="round"/></g>
       <g id="${id}-right"><path d="M5 5L7 23" stroke="#234152" stroke-width="7" stroke-linecap="round"/></g>
-      <rect x="-10" y="-17" width="20" height="27" rx="7" fill="${color}"/>
+      <rect x="-10" y="-17" width="20" height="27" rx="7" fill="${color}"/><path d="M3-16Q10-16 10-9V4Q10 10 3 10Z" fill="#07171d" opacity=".22"/>
       <path d="M-6-14V6M6-14V6" stroke="#eee9b9" stroke-width="2"/>
       <path id="${id}-arms" d="M-10-9L-16 5M10-9L16 5" fill="none" stroke="#bd8c64" stroke-width="6" stroke-linecap="round"/>
       <circle cy="-22" r="9" fill="#bd8c64"/><path d="M-10-23Q-9-36 0-34Q9-34 10-23Z" fill="#f0c466"/>
@@ -35,7 +35,7 @@
   }
   function vehicle(id, green = false) {
     const body = green ? '#678e63' : '#0796b0';
-    return group(id, `<ellipse cy="12" rx="48" ry="88" fill="#06171e" opacity=".35"/>
+    return group(id, `<ellipse cx="12" cy="22" rx="48" ry="88" fill="#06171e" opacity=".28"/><path d="M-31-76L-20-64H42V49L31 39Z" fill="#344b5b"/><path d="M29 39L40 51V80L27 90L17 83Z" fill="#173b47"/>
       <rect x="-36" y="-53" width="9" height="25" rx="4" fill="#08131c"/><rect x="27" y="-53" width="9" height="25" rx="4" fill="#08131c"/>
       <rect x="-37" y="43" width="10" height="24" rx="4" fill="#08131c"/><rect x="27" y="43" width="10" height="24" rx="4" fill="#08131c"/>
       <rect x="-31" y="-76" width="62" height="115" rx="5" fill="#8098a6"/>
@@ -49,22 +49,32 @@
       <path d="M-29 47H-39M29 47H39" stroke="#a2b6c1" stroke-width="3"/>
       <rect x="-42" y="43" width="7" height="12" rx="2" fill="#213d4b"/><rect x="35" y="43" width="7" height="12" rx="2" fill="#213d4b"/>
       <rect x="-29" y="-21" width="58" height="20" fill="${body}"/>
-      ${text(0, -7, green ? 'SUPPLY' : 'SNAP ERP', 9, '#fff', 'text-anchor="middle" font-weight="700"')}
+      <path d="M-28 32H20L27 42H-28Z" fill="#ffffff" opacity=".22"/><path d="M-24 48L-6 48L-18 64H-22Z" fill="#ffffff" opacity=".25"/>${text(0, -7, green ? 'SUPPLY' : 'SNAP ERP', 9, '#fff', 'text-anchor="middle" font-weight="700"')}
       <path d="M-21 83L-29 120M21 83L29 120" stroke="#ffeeae" stroke-width="12" opacity=".055"/>`);
   }
   function building(x, y, w, h, title, interior = '') {
-    return `<g transform="translate(${x} ${y})"><rect x="9" y="12" width="${w}" height="${h}" rx="9" fill="#0a1b23" opacity=".45"/>
-      <rect width="${w}" height="${h}" rx="7" fill="#304957" stroke="#60808e" stroke-width="2"/>
-      <path d="M0 25V0H${w}V25" fill="#5e7987"/>
+    const d = 22;
+    return `<g transform="translate(${x} ${y})">
+      <path d="M0 0H${w}L${w + 40} 30V${h + 35}H30L0 ${h}Z" fill="#07171d" opacity=".23"/>
+      <path d="M${w} 0L${w + d} ${d}V${h + d}L${w} ${h}Z" fill="url(#wall-side)"/>
+      <path d="M0 ${h}H${w}L${w + d} ${h + d}H${d}Z" fill="#223a47"/>
+      <rect width="${w}" height="${h}" rx="4" fill="url(#building-floor)" stroke="#60808e" stroke-width="2"/>
+      <rect x="12" y="36" width="${w - 24}" height="${h - 48}" rx="3" fill="url(#interior-floor)"/>
+      <path d="M12 36H${w - 12}V48H24V${h - 12}H12Z" fill="#06171e" opacity=".3"/>
+      ${interior}
+      <path d="M20 34H${w - 20}" stroke="#d9e6e9" stroke-width="2" opacity=".3"/>
+      <path d="M0 25V0H${w}V25Z" fill="url(#roof-metal)"/>
+      <path d="M0 0H${w}L${w + d} ${d}H${w}L${w - d} 4H4V25H0Z" fill="#c1d5dc" opacity=".55"/>
+      <path d="M0 ${h - 9}H${w}V${h}H0Z" fill="#7894a0"/>
+      <path d="M0 ${h - 9}H${w}" stroke="#aec2c9"/>
       ${text(16, 17, title, 10, '#e2eef1', 'letter-spacing="2"')}
-      <rect x="12" y="36" width="${w - 24}" height="${h - 48}" rx="3" fill="#203540"/>
-      ${interior}</g>`;
+    </g>`;
   }
   function shelf(x, y) {
-    return `<g transform="translate(${x} ${y})"><rect width="220" height="62" rx="3" fill="#172b35" stroke="#66808b"/>
+    return `<g transform="translate(${x} ${y})"><path d="M0 62H220L232 74H12Z" fill="#07171d" opacity=".35"/><path d="M220 0L230 10V72L220 62Z" fill="#364b55"/><rect width="220" height="62" rx="3" fill="url(#interior-floor)" stroke="#66808b"/>
     <path d="M0 25H220M0 56H220M8 0V62M212 0V62" stroke="#a5a68c" stroke-width="4"/></g>`;
   }
-  const belt = (x, y, w, h) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="8" fill="#142a36" stroke="#7695a2" stroke-width="4"/>${Array.from({ length: Math.floor(h / 13) }, (_, i) => `<path d="M${x + 5} ${y + 7 + i * 13}H${x + w - 5}" stroke="#4d6978" stroke-width="3"/>`).join('')}`;
+  const belt = (x, y, w, h) => `<path d="M${x} ${y + h}H${x + w}L${x + w + 9} ${y + h + 12}H${x + 9}Z" fill="#091b23"/><path d="M${x + w} ${y}L${x + w + 9} ${y + 12}V${y + h + 12}L${x + w} ${y + h}Z" fill="#38535f"/><rect x="${x}" y="${y}" width="${w}" height="${h}" rx="8" fill="#142a36" stroke="#7695a2" stroke-width="4"/>${Array.from({ length: Math.floor(h / 13) }, (_, i) => `<path d="M${x + 5} ${y + 7 + i * 13}H${x + w - 5}" stroke="#4d6978" stroke-width="3"/>`).join('')}`;
   let mounted = false, target = 0, displayed = 0, frame = 0, previous = 0, lastStage = -1;
   let nodes;
   const ids = ['campus', 'supplier-truck', 'truck', 'farm-worker', 'receiver', 'stock-worker', 'loader', 'customer-worker', 'raw-goods', 'handover', 'machine-wheel', 'order-call', 'order-signal', 'invoice-panel', 'tax-panel', 'tax-packet', 'tax-sending', 'tax-stamp', 'invoice-unpaid', 'payment-panel', 'payment-check', 'payment-pending', 'payment-success', 'receipt-panel', 'receipt-lines', ...Array.from({ length: 8 }, (_, i) => `stock-${i}`)];
@@ -80,18 +90,27 @@
     let trees = '';
     for (let i = 0; i < 30; i++) { const y = 100 + i * 108; trees += tree(i % 2 ? 40 : 970, y, .7 + (i % 3) * .15); }
     const invoice = `<rect width="520" height="185" rx="10" fill="#f0f4f4"/>${text(24, 30, 'CUSTOMER INVOICE', 12, '#476472', 'letter-spacing="2"')}${text(24, 62, 'INV-0286', 25, '#193340')}${text(24, 91, '24 packages · Credit sale', 13, '#59717d')}<path d="M24 111H490" stroke="#beced3"/>${text(24, 141, 'TOTAL  KSh 48,000', 18, '#193340')}<g id="invoice-unpaid">${text(340, 141, 'UNPAID', 13, '#997136', 'font-weight="700"')}</g>${text(24, 166, 'ILLUSTRATIVE RECORD', 9, '#71858b')}`;
-    svg.innerHTML = `<title>From the supplier to the final receipt</title><defs><linearGradient id="cargo-metal" x2="1" y2="0"><stop stop-color="#c3d2db"/><stop offset=".5" stop-color="#edf3f4"/><stop offset="1" stop-color="#b0c3ce"/></linearGradient></defs>
+    svg.innerHTML = `<title>From the supplier to the final receipt</title><defs><linearGradient id="cargo-metal" x2="1" y2="0"><stop stop-color="#c3d2db"/><stop offset=".5" stop-color="#edf3f4"/><stop offset="1" stop-color="#b0c3ce"/></linearGradient>
+      <linearGradient id="roof-metal" x2="0.8" y2="1"><stop stop-color="#9fb8c2"/><stop offset=".45" stop-color="#688894"/><stop offset="1" stop-color="#405e6d"/></linearGradient>
+      <linearGradient id="wall-side" x2="1" y2="1"><stop stop-color="#425d6b"/><stop offset="1" stop-color="#182d39"/></linearGradient>
+      <linearGradient id="building-floor" x2="1" y2="1"><stop stop-color="#58717d"/><stop offset="1" stop-color="#2d4654"/></linearGradient>
+      <linearGradient id="interior-floor" x2="1" y2="1"><stop stop-color="#172d39"/><stop offset="1" stop-color="#36505b"/></linearGradient>
+      <linearGradient id="parcel-front" x2="1" y2="1"><stop stop-color="#f0f3e9"/><stop offset="1" stop-color="#a8b9b6"/></linearGradient>
+      <linearGradient id="parcel-top" x2="1" y2="1"><stop stop-color="#ffffff"/><stop offset="1" stop-color="#dce6de"/></linearGradient>
+      <radialGradient id="tree-volume" cx=".3" cy=".2" r=".8"><stop stop-color="#719576"/><stop offset=".5" stop-color="#466f53"/><stop offset="1" stop-color="#254939"/></radialGradient>
+      <pattern id="floor-grid" width="64" height="64" patternUnits="userSpaceOnUse"><path d="M64 0H0V64" fill="none" stroke="#88a6a5" stroke-width=".7" opacity=".16"/></pattern>
+    </defs>
     <rect width="1600" height="1400" fill="var(--s-bg)"/>
-    <g id="campus"><rect x="0" y="-180" width="1010" height="3650" rx="80" fill="var(--world-ground)"/>
-      <path d="${road}" fill="none" stroke="#0e2029" stroke-width="132"/><path d="${road}" fill="none" stroke="#49606a" stroke-width="118"/><path d="${road}" fill="none" stroke="#263944" stroke-width="110"/>
+    <g id="campus"><rect x="16" y="-160" width="1010" height="3650" rx="80" fill="#091c25" opacity=".32"/><rect x="0" y="-180" width="1010" height="3650" rx="80" fill="var(--world-ground)"/>
+      <rect x="0" y="-180" width="1010" height="3650" rx="80" fill="url(#floor-grid)"/><path d="${road}" transform="translate(10 12)" fill="none" stroke="#07171d" stroke-width="138" opacity=".2"/><path d="${road}" fill="none" stroke="#0e2029" stroke-width="132"/><path d="${road}" fill="none" stroke="#49606a" stroke-width="118"/><path d="${road}" fill="none" stroke="#263944" stroke-width="110"/>
       <path d="${road}" fill="none" stroke="#c7be92" stroke-width="2" stroke-dasharray="18 20"/>
       ${trees}
       <path d="M345 275H520M420 925H615M510 1580H650M510 2960H640" fill="none" stroke="#52666a" stroke-width="48"/>
-      <rect x="65" y="92" width="272" height="264" rx="14" fill="var(--world-yard)" stroke="#667d85"/>${materials}
+      <path d="M65 342H337L349 356H77Z" fill="#536b73"/><path d="M337 92L349 106V356L337 342Z" fill="#6a8188"/><rect x="65" y="92" width="272" height="250" rx="5" fill="var(--world-yard)" stroke="#8da3a8"/><path d="M81 104H323M81 104V326" fill="none" stroke="#e6eff0" opacity=".5"/>${materials}
       ${building(95, 385, 190, 95, 'SUPPLIER COLLECTION', `<path d="M20 45H165M20 68H165" stroke="#678477" stroke-width="3"/>`)}
       ${text(75, 69, '01 / SUPPLIER', 17, 'var(--world-label)', 'letter-spacing="3"')}
 
-      ${building(610, 755, 300, 425, 'FACTORY / PROCESSING', `${belt(32, 80, 58, 305)}<rect x="115" y="135" width="147" height="151" rx="12" fill="#66818b"/><rect x="130" y="150" width="117" height="75" rx="5" fill="#14323f"/><path d="M170 70V135M206 70V135" stroke="#8ca5ac" stroke-width="18"/>${text(137, 254, 'LINE / 01', 13, '#ecf0e9')}<path d="M90 345H252V408" fill="none" stroke="#698692" stroke-width="30"/>`)}
+      ${building(610, 755, 300, 425, 'FACTORY / PROCESSING', `${belt(32, 80, 58, 305)}<rect x="115" y="135" width="147" height="151" rx="12" fill="url(#roof-metal)"/><path d="M262 135L274 147V298L262 286Z" fill="#304d5b"/><path d="M115 286H262L274 298H127Z" fill="#17333f"/><rect x="130" y="150" width="117" height="75" rx="5" fill="#14323f"/><path d="M170 70V135M206 70V135" stroke="#8ca5ac" stroke-width="18"/>${text(137, 254, 'LINE / 01', 13, '#ecf0e9')}<path d="M90 345H252V408" fill="none" stroke="#698692" stroke-width="30"/>`)}
       <path d="M862 1163V1320" stroke="#66828e" stroke-width="30"/><path d="M862 1163V1320" stroke="#263f4c" stroke-width="20" stroke-dasharray="6 6"/>
       ${building(635, 1310, 290, 360, 'FINISHED GOODS', shelf(34, 70) + shelf(34, 166) + `<path d="M0 286H68" stroke="#a6b5b6" stroke-width="24"/>`)}
       ${building(640, 1745, 270, 130, 'SALES DESK', '<rect x="30" y="65" width="170" height="35" rx="5" fill="#8d9c92"/><rect x="115" y="44" width="50" height="32" rx="4" fill="#88b6bf"/>')}
@@ -214,6 +233,8 @@
     const hud = mobile ? 'translate(28 315) scale(1.04)' : 'translate(750 28) scale(1.02)';
     for (const id of ['invoice-panel', 'tax-panel', 'payment-panel', 'receipt-panel']) nodes[id].setAttribute('transform', hud);
     svg.setAttribute('viewBox', mobile ? '0 0 600 850' : '0 0 1400 800');
+    window.journeyPose = { t, nodes };
+    window.renderIndustrialJourney?.(t, nodes);
   }
   function animate(now) {
     const dt = previous ? Math.min(64, now - previous) : 16; previous = now;
@@ -222,10 +243,10 @@
     draw(displayed);
     if (displayed !== target) frame = requestAnimationFrame(animate); else { frame = 0; previous = 0; }
   }
-  window.renderJourneyChapter = (stage, progress) => {
+  window.renderJourneyChapter = (stage, progress, immediate = false) => {
     if (!Number.isFinite(stage) || !Number.isFinite(progress)) return;
     target = Math.max(0, Math.min(12, Math.floor(stage) + clamp(progress)));
-    if (reduced.matches) { cancelAnimationFrame(frame); frame = 0; previous = 0; displayed = target; draw(displayed); }
+    if (immediate || reduced.matches) { cancelAnimationFrame(frame); frame = 0; previous = 0; displayed = target; draw(displayed); }
     else if (!frame) frame = requestAnimationFrame(animate);
   };
   window.addEventListener('resize', () => { if (mounted) draw(displayed); });

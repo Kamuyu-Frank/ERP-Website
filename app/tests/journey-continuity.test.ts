@@ -187,3 +187,38 @@ test('transport meets receiving without a sideways camera jump in either scroll 
     expect(snapshot(1.9999)).toEqual(before);
   }
 });
+
+test('3D renderer receives the existing smoothed timeline and physical parcel poses', () => {
+  const p = player(false);
+  const frames: { time: number; parcel: string }[] = [];
+  Object.assign(p.window, {
+    renderIndustrialJourney(time: number, sceneNodes: Record<string, SceneNode>) {
+      expect(Number.isFinite(time)).toBe(true);
+      frames.push({ time, parcel: sceneNodes['stock-0'].attributes.transform });
+    },
+  });
+  p.pose(0);
+  p.window.renderJourneyChapter(6, .5);
+  expect(p.callbacks.size).toBe(1);
+  p.settle();
+  expect(frames.at(-1)?.time).toBe(6.5);
+  expect(frames.some(frame => frame.time > 0 && frame.time < 6.5)).toBe(true);
+  const parcel = frames.at(-1)?.parcel;
+  p.pose(10.2);
+  p.pose(6.5);
+  expect(frames.at(-1)?.parcel).toBe(parcel);
+  expect(p.mounts).toBe(1);
+});
+
+test('initial iframe synchronization snaps directly to the restored scroll position', () => {
+  const p = player(false);
+  p.pose(0);
+  const synchronize = p.window.renderJourneyChapter as (stage:number,progress:number,immediate?:boolean)=>void;
+  synchronize(11, .5, true);
+  expect(p.callbacks.size).toBe(0);
+  expect(p.nodes.get('#receipt-panel')?.attributes.opacity).toBe('1');
+  expect(p.nodes.get('svg')?.attributes['aria-label']).toContain('Receipt');
+  p.window.renderJourneyChapter(10, .2);
+  expect(p.callbacks.size).toBe(1);
+  p.settle();
+});

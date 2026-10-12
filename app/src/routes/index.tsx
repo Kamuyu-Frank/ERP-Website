@@ -34,7 +34,7 @@ function Home(){
  <section id="workflow" className="journey journey-immersive" ref={sectionRef} aria-label="One continuous journey from the supplier to the final receipt">
   {journeySteps.map((s,i)=><span key={s.name} id={`step-${i}`} className="journey-anchor" style={{'--step':i} as CSSProperties} aria-hidden="true"/>)}
   <div className={stage===0?"journey-sticky journey-first-screen":"journey-sticky"}>
-   <iframe ref={journeyFrame} onLoad={syncJourney} src="/journey.html?continuous=1" title="Winding road from the supplier to the final receipt" className="journey-animation-frame" tabIndex={-1}/>
+   <iframe ref={journeyFrame} onLoad={syncJourney} src="/journey.html?continuous=1&v=handover2-20261012" title="Winding road from the supplier to the final receipt" className="journey-animation-frame" tabIndex={-1}/>
    <div className={stage===0?"journey-copy journey-opening-copy":"journey-copy"} aria-live="polite" aria-atomic="true">
     <p className="journey-eyebrow">{stage===0?<> <span className="opening-status-dot" aria-hidden="true"/> ONE CONNECTED WORKSPACE</>:selected.name}</p>
     <h2 key={selected.name}>{stage===0?<>Your business.<br/><span className="opening-headline-accent">In sync.</span></>:selected.title}</h2>

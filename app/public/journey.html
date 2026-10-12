@@ -1,12 +1,18 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><script src="/theme.js"></script><link rel="stylesheet" href="/theme.css"><title>SnapERP — Supplier to receipt</title><style>@import url('/assets/fonts/fonts.css');
 html,body{margin:0;width:100%;height:100%;overflow:hidden;background:var(--s-bg)}svg{display:block;width:100%;height:100%}.maize{transform-box:fill-box;transform-origin:bottom center;animation:sway 4s ease-in-out infinite alternate}@keyframes sway{from{rotate:-3deg}to{rotate:3deg}}@media(prefers-reduced-motion:reduce){*{animation:none!important}}
-</style></head><body><svg id="world" role="img" aria-label="Connected supplier to receipt journey"></svg><script src="/journey-scenes.js"></script><script>
+.industrial-canvas{position:absolute;inset:0;width:100%;height:100%;display:none}.industrial-ready .industrial-canvas{display:block}.industrial-ready #world{position:relative;z-index:1;pointer-events:none}.industrial-ready #campus,.industrial-ready #world>rect{visibility:hidden}
+@media(max-width:800px){.industrial-ready #invoice-panel,.industrial-ready #tax-panel,.industrial-ready #payment-panel,.industrial-ready #receipt-panel{transform:translate(28px,25px) scale(1.04)}}
+.customer-status{display:none}@media(max-width:800px){.industrial-ready #payment-panel,.industrial-ready #receipt-panel{visibility:hidden}.industrial-ready .customer-status:not([hidden]){display:block;position:absolute;z-index:2;top:12px;left:12px;right:12px;padding:10px 12px;border-radius:8px;background:var(--s-surface);color:var(--s-ink);font:600 12px Quicksand,sans-serif;box-shadow:0 4px 16px #0002}}
+.industrial-loading #world,.industrial-loading .industrial-canvas{visibility:hidden}.industrial-loading:after{content:"Preparing your business journey…";position:absolute;inset:0;display:grid;place-items:center;color:var(--s-muted);font:14px Quicksand,sans-serif}
+</style></head><body class="industrial-loading"><svg id="world" role="img" aria-label="Connected supplier to receipt journey"></svg><script src="/journey-scenes.js?v=handover2-20261012"></script><script type="module">import("/industrial-journey.js?v=handover2-20261012").finally(()=>{window.journeyRendererSettled=true;if(parent===window||window.journeySynchronized)document.body.classList.remove("industrial-loading");}).catch(()=>{});</script><script>
 window.renderJourneyChapter(0,0);
 window.addEventListener('message',event=>{
   if(event.origin!==location.origin||event.source!==parent||event.data?.type!=='snaperp-journey')return;
   const p=event.data.progress;if(typeof p!=='number'||!Number.isFinite(p))return;
   const bounded=Math.max(0,Math.min(12,p)),stage=Math.min(11,Math.floor(bounded));
-  window.renderJourneyChapter(stage,bounded-stage);
+  window.renderJourneyChapter(stage,bounded-stage,!window.journeySynchronized);
+  window.journeySynchronized=true;
+  if(window.journeyRendererSettled)document.body.classList.remove("industrial-loading");
 });
 </script></body></html>
